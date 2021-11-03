@@ -1,0 +1,10 @@
+name: daymet-pyprocessing
+channel_priority: strict
+channels:
+  - conda-forge
+dependencies:
+  - geopandas
+  - yaml
+  - requests
+  - h5netcdf
+  - xarray

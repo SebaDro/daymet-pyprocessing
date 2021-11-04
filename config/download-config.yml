@@ -1,0 +1,15 @@
+geo:
+  file: "./data/features.geojson"
+  idCol: "id"
+  ids:
+    - "0"
+    - "1"
+    - "2"
+singleFileStorage: false
+timeFrame:
+  startTime: "1980-01-01T12:00:00Z"
+  endTime: "1981-12-31T12:00:00Z"
+outputDir: "./output"
+variable: "prcp"
+version: "v4" #Supported: v3, v4
+

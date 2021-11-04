@@ -4,6 +4,7 @@ import yaml
 import requests as req
 import h5netcdf
 import xarray as xr
+import os
 from io import BytesIO
 
 daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 = -100 + x_0 = 0 + y_0 = 0 + ellps = " \
@@ -314,7 +315,10 @@ def download_daymet(params: DaymetDownloadParameters, outpath: str, version: str
     r = req.get(params.get_request_url(version), params=params.get_params_dict())
     if r.status_code != req.codes.ok:
         r.raise_for_status()
-    f = open("{}/{}/{}_{}".format(outpath, params.feature_id, params.feature_id, params.get_file_name(version)), "wb")
+    out_dir = "{}/{}".format(outpath, params.feature_id)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    f = open("{}/{}_{}".format(out_dir, params.feature_id, params.get_file_name(version)), "wb")
     f.write(r.content)
     f.close()
 

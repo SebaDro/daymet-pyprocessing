@@ -61,23 +61,19 @@ class DaymetDownloadConfig:
 
 
 class DaymetDownloadParameters:
-    def __init__(self, year: int, variable: str, basin: str, north: float, west: float, east: float, south: float,
+    def __init__(self, year: int, variable: str, feature_id: str, north: float, west: float, east: float, south: float,
                  start_time: datetime.datetime, end_time: datetime.datetime):
         self.__base_url_v3 = "https://thredds.daac.ornl.gov/thredds/ncss/ornldaac/1328/"
         self.__base_url_v4 = "https://thredds.daac.ornl.gov/thredds/ncss/ornldaac/1840/"
         self.__year = year
         self.__variable = variable
-        self.__basin = basin
+        self.__feature_id = feature_id
         self.__north = north
         self.__west = west
         self.__east = east
         self.__south = south
         self.__start_time = start_time
         self.__end_time = end_time
-
-    @property
-    def base_url(self):
-        return self.__base_url
 
     @property
     def year(self):
@@ -88,11 +84,11 @@ class DaymetDownloadParameters:
         return self.__variable
 
     @property
-    def basin(self):
-        return self.__basin
+    def feature_id(self):
+        return self.__feature_id
 
     @property
-    def nort(self):
+    def north(self):
         return self.__north
 
     @property
@@ -172,9 +168,9 @@ class DaymetDownloadParameters:
 
 
 class DaymetPreprocessingConfig:
-    def __init__(self, automatic_mode: bool, basins: list, directory: str, variables: list, version: str):
+    def __init__(self, automatic_mode: bool, features: list, directory: str, variables: list, version: str):
         self.__automatic_mode = automatic_mode
-        self.__basins = basins
+        self.__features = features
         self.__directory = directory
         self.__variables = variables
         self.__version = version
@@ -184,8 +180,8 @@ class DaymetPreprocessingConfig:
         return self.__automatic_mode
 
     @property
-    def basins(self):
-        return self.__basins
+    def features(self):
+        return self.__features
 
     @property
     def directory(self):
@@ -249,26 +245,28 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     """
     params_list = []
 
-    basins = gpd.read_file(config.geo_file)
-    for basin_id in config.ids:
-        basins[config.id_col] = basins[config.id_col].astype(str)
-        basin = basins[basins.hru_id == basin_id]
-        minx = basin.total_bounds[0]
-        miny = basin.total_bounds[1]
-        maxx = basin.total_bounds[2]
-        maxy = basin.total_bounds[3]
+    features = gpd.read_file(config.geo_file)
+    for feature_id in config.ids:
+        features[config.id_col] = features[config.id_col].astype(str)
+        feature = features[features[config.id_col] == feature_id]
+        minx = feature.total_bounds[0]
+        miny = feature.total_bounds[1]
+        maxx = feature.total_bounds[2]
+        maxy = feature.total_bounds[3]
 
         if (config.end_time.year - config.start_time.year) == 0:
             params_list.append(DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
-                                                        basin=basin_id, west=minx, south=miny, east=maxx, north=maxy,
-                                                        start_time=config.start_time, end_time=config.end_time))
+                                                        feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                        north=maxy, start_time=config.start_time,
+                                                        end_time=config.end_time))
             return params_list
         elif (config.end_time.year - config.start_time.year) >= 1:
             start_year_start_time = config.start_time
             start_year_end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(config.start_time.year), "%Y-%m-%dT%H:%M:%S%z")
             start_year_params = DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
-                                                         basin=basin_id, west=minx, south=miny, east=maxx, north=maxy,
-                                                         start_time=start_year_start_time, end_time=start_year_end_time)
+                                                         feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                         north=maxy, start_time=start_year_start_time,
+                                                         end_time=start_year_end_time)
 
             params_list.append(start_year_params)
 
@@ -276,14 +274,15 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
                 start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
                 end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
                 params_list.append(DaymetDownloadParameters(year=year, variable=config.variable,
-                                                            basin=basin_id, west=minx, south=miny, east=maxx, north=maxy,
-                                                            start_time=start_time, end_time=end_time))
+                                                            feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                            north=maxy, start_time=start_time, end_time=end_time))
 
             end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(config.end_time.year), "%Y-%m-%dT%H:%M:%S%z")
             end_year_end_time = config.end_time
             end_year_params = DaymetDownloadParameters(year=config.end_time.year, variable=config.variable,
-                                                       basin=basin_id, west=minx, south=miny, east=maxx, north=maxy,
-                                                       start_time=end_year_start_time, end_time=end_year_end_time)
+                                                       feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                       north=maxy, start_time=end_year_start_time,
+                                                       end_time=end_year_end_time)
             params_list.append(end_year_params)
         else:
             raise ValueError("Can't create download params for negative timespan {} to {}"
@@ -309,21 +308,21 @@ def download_daymet(params: DaymetDownloadParameters, outpath: str, version: str
     r = req.get(params.get_request_url(version), params=params.get_params_dict())
     if r.status_code != req.codes.ok:
         r.raise_for_status()
-    f = open("{}/{}/{}_{}".format(outpath, params.basin, params.basin, params.get_file_name(version)), "wb")
+    f = open("{}/{}/{}_{}".format(outpath, params.feature_id, params.feature_id, params.get_file_name(version)), "wb")
     f.write(r.content)
     f.close()
 
 
-def download_and_merge_multiple_daymet_datasets(basin: str, params_list: list, outpath: str, version: str):
+def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str):
     """
-    Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single basin using
+    Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature using
     the given list of DaymetDownloadParameters. The single NetCDF datasets will be concatenated and stored within a
     single file.
 
     Parameters
     ----------
-    basin: str
-        The basin to download different datasets for
+    feature: str
+        The feature to download different datasets for
     params_list: list
         List of request parameters
     outpath: str
@@ -336,8 +335,8 @@ def download_and_merge_multiple_daymet_datasets(basin: str, params_list: list, o
     counter = 0
     for params in params_list:
         counter += 1
-        print("Downloading Daymet file {} from {}: {} for basin {}"
-              .format(counter, len(params_list), params.get_file_name(version), params.basin), end="\r")
+        print("Downloading Daymet file {} from {}: {} for feature {}"
+              .format(counter, len(params_list), params.get_file_name(version), params.feature_id), end="\r")
         r = req.get(params.get_request_url(version), params=params.get_params_dict())
         if r.status_code != req.codes.ok:
             r.raise_for_status()
@@ -345,9 +344,9 @@ def download_and_merge_multiple_daymet_datasets(basin: str, params_list: list, o
             ds_list.append(ds)
     result = xr.concat(ds_list, dim="time").sortby("time")
     if version == "v3":
-        result.to_netcdf("{}/{}_daymet_v3_{}_na.nc4".format(outpath, basin, params.variable))
+        result.to_netcdf("{}/{}_daymet_v3_{}_na.nc4".format(outpath, feature, params.variable))
     elif version == "v4":
-        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, basin, params.variable))
+        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
     else:
-        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, basin, params.variable))
+        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
     print("\nFinished downloading {} Daymet files\n".format(counter))

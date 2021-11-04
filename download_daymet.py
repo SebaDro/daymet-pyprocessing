@@ -16,19 +16,19 @@ def main():
     params_list = daymet.create_daymet_download_params(config)
     if config.single_file_storage:
         for basin in config.ids:
-            params = list(filter(lambda x: x.basin == basin, params_list))
+            params = list(filter(lambda x: x.feature_id == basin, params_list))
             daymet.download_and_merge_multiple_daymet_datasets(basin, params, config.output_dir, config.version)
     else:
         counter = 0
         for params in params_list:
             counter += 1
             print("Downloading Daymet file {} from {}: {} for basin {}"
-                  .format(counter, len(params_list), params.get_file_name(config.version), params.basin), end="\r")
+                  .format(counter, len(params_list), params.get_file_name(config.version), params.feature_id), end="\r")
             try:
                 daymet.download_daymet(params, config.output_dir, config.version)
             except req.exceptions.HTTPError:
                 warnings.warn("Failed downloading Daymet file {} for basin {}".format(
-                    params.get_file_name(config.version), params.basin))
+                    params.get_file_name(config.version), params.feature_id))
     print("\nFinished downloading {} Daymet file(s)".format(len(params_list)))
 
 

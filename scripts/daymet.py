@@ -214,11 +214,14 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
     with open(path, 'r') as stream:
         try:
             config = yaml.safe_load(stream)
+            ids = None
+            if "ids" in config["geo"]:
+                ids = config["geo"]["ids"]
             start_time = datetime.datetime.strptime(config["timeFrame"]["startTime"], "%Y-%m-%dT%H:%M:%S%z")
             end_time = datetime.datetime.strptime(config["timeFrame"]["endTime"], "%Y-%m-%dT%H:%M:%S%z")
-            return DaymetDownloadConfig(config["geo"]["file"], config["geo"]["idCol"], config["geo"]["ids"],
-                                        config["variable"], start_time, end_time, config["outputDir"],
-                                        config["singleFileStorage"], config["version"])
+            return DaymetDownloadConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["variable"],
+                                        start_time, end_time, config["outputDir"], config["singleFileStorage"],
+                                        config["version"])
         except yaml.YAMLError as ex:
             print("Error reading daymet file {}".format(ex))
         except KeyError as ex:
@@ -246,7 +249,10 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     params_list = []
 
     features = gpd.read_file(config.geo_file)
-    for feature_id in config.ids:
+    feature_ids = config.ids
+    if feature_ids is None:
+        feature_ids = features[config.id_col]
+    for feature_id in feature_ids:
         features[config.id_col] = features[config.id_col].astype(str)
         feature = features[features[config.id_col] == feature_id]
         minx = feature.total_bounds[0]

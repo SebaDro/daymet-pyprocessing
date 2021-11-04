@@ -17,32 +17,16 @@ _environment.yml_ and a _requirements.txt_ in this repository, respectively.
 In order to run the _download_daymet.py_ script, you have to provide a configuration file which controls the download
 process. You'll find an exemplary config file inside _./config_ which you can use as starting point.  
 
-**geo.file:**  
-Path to a file that contains geospatial data. The file must be in a data format that can be read by GeoPandas and
-should contain polygon geometries with WGS84 coordinates, which will be used for requesting Daymet data.  
-
-**geo.idCol**:  
-Name of the column that contains unique identfiers for the geospatial objects.  
-
-**geo.ids:**  
-IDs of the geospatial objects used for requesting Daymet data
-
-**singleFileStorage:**  
-For `true` the downloaded yearly Daymet datasets will be concatenated by time dimension and stored within a single file
-for each geospatial object. For `false` the downloaded yearly Daymet datasets will be stored within separate files for
-each object and year.  
-
-**timeFrame:**  
-`startTime` and `endTime` for requesting Daymet data
-
-**outputDir:**  
-Downloaded datasets will be stored within this directory
-
-**variable:**  
-Data variable that should be included in the downloaded Daymet datasets
-
-**version:**  
-Daymet Version to request data for
+| Config parameter  | Description                                                                                                                                                                                                                                                         |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| _geo.file_          | Path to a file that contains geospatial data. The file must be in a data format that can be read by GeoPandas and should contain polygon geometries with WGS84 coordinates, which will be used for requesting Daymet data.                                          |
+| _geo.idCol_         | Name of the column that contains unique identfiers for the geospatial objects.                                                                                                                                                                                      |
+| _geo.ids_           | IDs of the geospatial objects used for requesting Daymet data. If `None`, all geospatial objects from the _geo.file_ will be considered.                                                                                                                            |
+| _singleFileStorage_ | For `true` the downloaded yearly Daymet datasets will be concatenated by time dimension and stored within a single file for each geospatial object. For `false` the downloaded yearly Daymet datasets will be stored within separate files foreach object and year. |
+| _timeFrame_         | `startTime` and `endTime` for requesting Daymet data.                                                                                                                                                                                                               |
+| _outputDir_         | Data variable that should be included in the downloaded Daymet datasets.                                                                                                                                                                                            |
+| _variable_          | Data variable that should be included in the downloaded Daymet datasets                                                                                                                                                                                             |
+| _version_           | Version of the Daymet dataset to be downloaded                                                                                                                                                                                                                      |
 
 ### Download Daymet data
 Prepare a config file as stated above and run the `download_daymet.py` script with the path to the config file as

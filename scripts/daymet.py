@@ -36,6 +36,10 @@ class DaymetDownloadConfig:
     def ids(self):
         return self.__ids
 
+    @ids.setter
+    def ids(self, value):
+        self.__ids = value
+
     @property
     def variable(self):
         return self.__variable
@@ -250,50 +254,56 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     params_list = []
 
     features = gpd.read_file(config.geo_file)
-    feature_ids = config.ids
-    if feature_ids is None:
-        feature_ids = features[config.id_col]
-    for feature_id in feature_ids:
+    # feature_ids = config.ids
+    if config.ids is None:
+        config.ids = features[config.id_col].tolist()
+    for feature_id in config.ids:
         features[config.id_col] = features[config.id_col].astype(str)
         feature = features[features[config.id_col] == feature_id]
-        minx = feature.total_bounds[0]
-        miny = feature.total_bounds[1]
-        maxx = feature.total_bounds[2]
-        maxy = feature.total_bounds[3]
-
-        if (config.end_time.year - config.start_time.year) == 0:
-            params_list.append(DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
-                                                        feature_id=feature_id, west=minx, south=miny, east=maxx,
-                                                        north=maxy, start_time=config.start_time,
-                                                        end_time=config.end_time))
-            return params_list
-        elif (config.end_time.year - config.start_time.year) >= 1:
-            start_year_start_time = config.start_time
-            start_year_end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(config.start_time.year), "%Y-%m-%dT%H:%M:%S%z")
-            start_year_params = DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
-                                                         feature_id=feature_id, west=minx, south=miny, east=maxx,
-                                                         north=maxy, start_time=start_year_start_time,
-                                                         end_time=start_year_end_time)
-
-            params_list.append(start_year_params)
-
-            for year in range(config.start_time.year + 1, config.end_time.year):
-                start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
-                end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
-                params_list.append(DaymetDownloadParameters(year=year, variable=config.variable,
-                                                            feature_id=feature_id, west=minx, south=miny, east=maxx,
-                                                            north=maxy, start_time=start_time, end_time=end_time))
-
-            end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(config.end_time.year), "%Y-%m-%dT%H:%M:%S%z")
-            end_year_end_time = config.end_time
-            end_year_params = DaymetDownloadParameters(year=config.end_time.year, variable=config.variable,
-                                                       feature_id=feature_id, west=minx, south=miny, east=maxx,
-                                                       north=maxy, start_time=end_year_start_time,
-                                                       end_time=end_year_end_time)
-            params_list.append(end_year_params)
+        if feature.empty:
+            print("WARNING: No feature with id {} exists in file {}. Download will be skipped. "
+                  .format(feature_id, config.geo_file))
         else:
-            raise ValueError("Can't create download params for negative timespan {} to {}"
-                             .format(config.start_time, config.end_time))
+            minx = feature.total_bounds[0]
+            miny = feature.total_bounds[1]
+            maxx = feature.total_bounds[2]
+            maxy = feature.total_bounds[3]
+
+            if (config.end_time.year - config.start_time.year) == 0:
+                params_list.append(DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
+                                                            feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                            north=maxy, start_time=config.start_time,
+                                                            end_time=config.end_time))
+                return params_list
+            elif (config.end_time.year - config.start_time.year) >= 1:
+                start_year_start_time = config.start_time
+                start_year_end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(config.start_time.year),
+                                                                 "%Y-%m-%dT%H:%M:%S%z")
+                start_year_params = DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
+                                                             feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                             north=maxy, start_time=start_year_start_time,
+                                                             end_time=start_year_end_time)
+
+                params_list.append(start_year_params)
+
+                for year in range(config.start_time.year + 1, config.end_time.year):
+                    start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
+                    end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
+                    params_list.append(DaymetDownloadParameters(year=year, variable=config.variable,
+                                                                feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                                north=maxy, start_time=start_time, end_time=end_time))
+
+                end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(config.end_time.year),
+                                                                 "%Y-%m-%dT%H:%M:%S%z")
+                end_year_end_time = config.end_time
+                end_year_params = DaymetDownloadParameters(year=config.end_time.year, variable=config.variable,
+                                                           feature_id=feature_id, west=minx, south=miny, east=maxx,
+                                                           north=maxy, start_time=end_year_start_time,
+                                                           end_time=end_year_end_time)
+                params_list.append(end_year_params)
+            else:
+                raise ValueError("Can't create download params for negative timespan {} to {}"
+                                 .format(config.start_time, config.end_time))
     return params_list
 
 

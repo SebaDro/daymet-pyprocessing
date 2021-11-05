@@ -6,8 +6,8 @@ geo:
     - "1"
 singleFileStorage: true
 timeFrame:
-  startTime: "2000-01-01T12:00:00Z"
-  endTime: "2010-12-31T12:00:00Z"
+  startTime: "2000-01-01T12:00:00"
+  endTime: "2010-12-31T12:00:00"
 outputDir: "./output"
 variable: "prcp"
 version: "v4" #Supported: v3, v4

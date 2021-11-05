@@ -166,8 +166,8 @@ class DaymetDownloadParameters:
                "east": str(self.__east),
                "south": str(self.__south),
                "horizStride": "1",
-               "time_start": self.__start_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-               "time_end": self.__end_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+               "time_start": self.__start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+               "time_end": self.__end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
                "timeStride": "1",
                "accept": "netcdf4"}
 
@@ -222,8 +222,8 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
             ids = None
             if "ids" in config["geo"]:
                 ids = config["geo"]["ids"]
-            start_time = datetime.datetime.strptime(config["timeFrame"]["startTime"], "%Y-%m-%dT%H:%M:%S%z")
-            end_time = datetime.datetime.strptime(config["timeFrame"]["endTime"], "%Y-%m-%dT%H:%M:%S%z")
+            start_time = datetime.datetime.strptime(config["timeFrame"]["startTime"], "%Y-%m-%dT%H:%M:%S")
+            end_time = datetime.datetime.strptime(config["timeFrame"]["endTime"], "%Y-%m-%dT%H:%M:%S")
             return DaymetDownloadConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["variable"],
                                         start_time, end_time, config["outputDir"], config["singleFileStorage"],
                                         config["version"])
@@ -277,8 +277,8 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
                 return params_list
             elif (config.end_time.year - config.start_time.year) >= 1:
                 start_year_start_time = config.start_time
-                start_year_end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(config.start_time.year),
-                                                                 "%Y-%m-%dT%H:%M:%S%z")
+                start_year_end_time = datetime.datetime.strptime("{}-12-31T12:00:00".format(config.start_time.year),
+                                                                 "%Y-%m-%dT%H:%M:%S")
                 start_year_params = DaymetDownloadParameters(year=config.start_time.year, variable=config.variable,
                                                              feature_id=feature_id, west=minx, south=miny, east=maxx,
                                                              north=maxy, start_time=start_year_start_time,
@@ -287,14 +287,14 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
                 params_list.append(start_year_params)
 
                 for year in range(config.start_time.year + 1, config.end_time.year):
-                    start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
-                    end_time = datetime.datetime.strptime("{}-12-31T12:00:00Z".format(year), "%Y-%m-%dT%H:%M:%S%z")
+                    start_time = datetime.datetime.strptime("{}-01-01T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
+                    end_time = datetime.datetime.strptime("{}-12-31T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
                     params_list.append(DaymetDownloadParameters(year=year, variable=config.variable,
                                                                 feature_id=feature_id, west=minx, south=miny, east=maxx,
                                                                 north=maxy, start_time=start_time, end_time=end_time))
 
-                end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00Z".format(config.end_time.year),
-                                                                 "%Y-%m-%dT%H:%M:%S%z")
+                end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00".format(config.end_time.year),
+                                                                 "%Y-%m-%dT%H:%M:%S")
                 end_year_end_time = config.end_time
                 end_year_params = DaymetDownloadParameters(year=config.end_time.year, variable=config.variable,
                                                            feature_id=feature_id, west=minx, south=miny, east=maxx,

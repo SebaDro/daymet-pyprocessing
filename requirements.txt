@@ -1,5 +1,5 @@
 geopandas
-yaml
+pyyaml
 requests
 h5netcdf
 xarray

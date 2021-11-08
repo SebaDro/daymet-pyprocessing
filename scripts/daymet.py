@@ -1,11 +1,14 @@
 import datetime
 import geopandas as gpd
 import yaml
+import logging
 import requests as req
 import h5netcdf
 import xarray as xr
 import os
 from io import BytesIO
+
+logger = logging.getLogger(__name__)
 
 daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 = -100 + x_0 = 0 + y_0 = 0 + ellps = " \
                   "WGS84 + units = m + no_defs "
@@ -122,7 +125,7 @@ class DaymetDownloadParameters:
         elif version == "v4":
             return self._get_v4_file_name()
         else:
-            print("Unsupported version {}. Returned v4 file name.".format(version))
+            logger.warning(f"Unsupported version {version}. Returned v4 file name.")
             return self._get_v4_file_name()
 
     def get_request_url(self, version: str):
@@ -131,7 +134,7 @@ class DaymetDownloadParameters:
         elif version == "v4":
             return self._get_v4_request_url()
         else:
-            print("Unsupported version {}. Returned v4 URL.".format(version))
+            logger.warning(f"Unsupported version {version}. Returned v4 URL.")
             return self._get_v4_request_url()
 
     def _get_v3_file_name(self):
@@ -227,12 +230,12 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
             return DaymetDownloadConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["variable"],
                                         start_time, end_time, config["outputDir"], config["singleFileStorage"],
                                         config["version"])
-        except yaml.YAMLError as ex:
-            print("Error reading daymet file {}".format(ex))
+        except yaml.YAMLError:
+            logger.exception(f"Error reading daymet file.")
         except KeyError as ex:
-            print("Missing config parameter: {}".format(ex))
+            logger.exception(f"Missing config parameter.")
         except ValueError as ex:
-            print("No valid format for 'timeFrame' value\n{}".format(ex))
+            logger.exception(f"No valid format for 'timeFrame' value.")
 
 
 def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
@@ -261,8 +264,7 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
         features[config.id_col] = features[config.id_col].astype(str)
         feature = features[features[config.id_col] == feature_id]
         if feature.empty:
-            print("WARNING: No feature with id {} exists in file {}. Download will be skipped. "
-                  .format(feature_id, config.geo_file))
+            logger.warning(f"No feature with id {feature_id} exists in file {config.geo_file}. Download will be skipped.")
         else:
             minx = feature.total_bounds[0]
             miny = feature.total_bounds[1]
@@ -355,8 +357,8 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
     counter = 0
     for params in params_list:
         counter += 1
-        print("Downloading Daymet file {} from {}: {} for feature {}"
-              .format(counter, len(params_list), params.get_file_name(version), params.feature_id), end="\r")
+        logger.info(f"Test Downloading Daymet file {counter} of {len(params_list)}: {params.get_file_name(version)}"
+                     f" for feature {params.feature_id}")
         r = req.get(params.get_request_url(version), params=params.get_params_dict())
         if r.status_code != req.codes.ok:
             r.raise_for_status()
@@ -369,4 +371,4 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
         result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
     else:
         result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
-    print("\nFinished downloading {} Daymet files\n".format(counter))
+    logger.info(f"Finished downloading {counter} Daymet files")

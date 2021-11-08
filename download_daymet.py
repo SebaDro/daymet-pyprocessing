@@ -1,21 +1,27 @@
 import sys
-import warnings
-
+import logging
+import logging.config
+import yaml
 import requests as req
 from scripts import daymet
 
-
 def main():
+    with open("./config/logging.yml", "r") as stream:
+        log_config = yaml.load(stream, Loader=yaml.FullLoader)
+        logging.config.dictConfig(log_config)
+
     if len(sys.argv) != 2:
         raise ValueError("Missing argument for config file path!")
     config_path = sys.argv[1]
     config = daymet.read_daymet_download_config(config_path)
+    if config is None:
+        raise SystemExit("Could not read configuration file.")
     if config.ids is None:
-        print("Start downloading Daymet files for all features stored in {} within timeframe {} to {}"
-              .format(config.geo_file, config.start_time, config.end_time))
+        logging.info(f"Start downloading Daymet files for all features stored in {config.geo_file} within timeframe"
+                     f" {config.start_time} to {config.end_time}")
     else:
-        print("Start downloading Daymet files for features {} stored in {} within timeframe {} to {}"
-              .format(config.ids, config.geo_file, config.start_time, config.end_time))
+        logging.info(f"Start downloading Daymet files for features {config.ids} stored in {config.geo_file} within"
+                     f" timeframe {config.start_time} to {config.end_time}")
     params_list = daymet.create_daymet_download_params(config)
     if config.single_file_storage:
         for feature_id in config.ids:
@@ -25,14 +31,14 @@ def main():
         counter = 0
         for params in params_list:
             counter += 1
-            print("Downloading Daymet file {} from {}: {} for feature {}"
-                  .format(counter, len(params_list), params.get_file_name(config.version), params.feature_id), end="\r")
+            logging.info(f"Downloading Daymet file {counter} of {len(params_list)}: "
+                         f"{params.get_file_name(config.version)} for feature {params.feature_id}")
             try:
                 daymet.download_daymet(params, config.output_dir, config.version)
             except req.exceptions.HTTPError as ex:
-                print("WARNING: Failed downloading Daymet file {} for feature {}. Cause: {}".format(
-                    params.get_file_name(config.version), params.feature_id, ex))
-    print("\nFinished downloading {} Daymet file(s)".format(len(params_list)))
+                logging.warning(f"Failed downloading Daymet file {params.get_file_name(config.version)}"
+                                f" for feature {params.feature_id}. Cause: {ex}")
+    logging.info(f"Finished downloading {len(params_list)} Daymet file(s)")
 
 
 if __name__ == "__main__":

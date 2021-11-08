@@ -28,16 +28,7 @@ def main():
             params = list(filter(lambda x: x.feature_id == feature_id, params_list))
             daymet.download_and_merge_multiple_daymet_datasets(feature_id, params, config.output_dir, config.version)
     else:
-        counter = 0
-        for params in params_list:
-            counter += 1
-            logging.info(f"Downloading Daymet file {counter} of {len(params_list)}: "
-                         f"{params.get_file_name(config.version)} for feature {params.feature_id}")
-            try:
-                daymet.download_daymet(params, config.output_dir, config.version)
-            except req.exceptions.HTTPError as ex:
-                logging.warning(f"Failed downloading Daymet file {params.get_file_name(config.version)}"
-                                f" for feature {params.feature_id}. Cause: {ex}")
+        daymet.download_multiple_daymet_datasets(params_list, config.output_dir, config.version)
     logging.info(f"Finished downloading {len(params_list)} Daymet file(s)")
 
 

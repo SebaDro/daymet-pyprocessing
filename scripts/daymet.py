@@ -257,7 +257,6 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     params_list = []
 
     features = gpd.read_file(config.geo_file)
-    # feature_ids = config.ids
     if config.ids is None:
         config.ids = features[config.id_col].tolist()
     for feature_id in config.ids:
@@ -309,7 +308,7 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     return params_list
 
 
-def download_daymet(params: DaymetDownloadParameters, outpath: str, version: str):
+def download_daymet(params: DaymetDownloadParameters, version: str, outpath: str = None):
     """
     Downloads a certain dataset in NetCDF format from the NetCDF Subset Service for Daymet data by using the given
     DaymetDownloadParameters.
@@ -318,28 +317,34 @@ def download_daymet(params: DaymetDownloadParameters, outpath: str, version: str
     ----------
     params: DaymetDownloadParameters
         Parameters used for a single request
-    outpath: str
-        Path to store the downloaded NetCDF file
     version: str
         Version of the Daymet dataset (supported: v3, v4)
+    outpath: str
+        Path to store the downloaded NetCDF file. If None, the downloaded dataset will not be stored within a file
+        but returned as xarray.Dataset
 
     """
-    r = req.get(params.get_request_url(version), params=params.get_params_dict())
+    r = req.get(params.get_request_url(version), params=params.get_params_dict(), timeout=10)
     if r.status_code != req.codes.ok:
         r.raise_for_status()
-    out_dir = "{}/{}".format(outpath, params.feature_id)
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    f = open("{}/{}_{}".format(out_dir, params.feature_id, params.get_file_name(version)), "wb")
-    f.write(r.content)
-    f.close()
+    if outpath is not None:
+        out_dir = "{}/{}".format(outpath, params.feature_id)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        f = open("{}/{}_{}".format(out_dir, params.feature_id, params.get_file_name(version)), "wb")
+        f.write(r.content)
+        f.close()
+        logger.info(f"Stored Daymet data into file {f.name}")
+    else:
+        with xr.open_dataset(BytesIO(r.content), engine="h5netcdf") as ds:
+            return ds
 
 
 def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str):
     """
-    Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature using
-    the given list of DaymetDownloadParameters. The single NetCDF datasets will be concatenated and stored within a
-    single file.
+    Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature
+    using the given list of DaymetDownloadParameters. The single NetCDF datasets will be concatenated and stored within
+    a single file.
 
     Parameters
     ----------
@@ -357,18 +362,54 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
     counter = 0
     for params in params_list:
         counter += 1
-        logger.info(f"Test Downloading Daymet file {counter} of {len(params_list)}: {params.get_file_name(version)}"
+        logger.info(f"Downloading Daymet file {counter} of {len(params_list)}: {params.get_file_name(version)}"
                      f" for feature {params.feature_id}")
-        r = req.get(params.get_request_url(version), params=params.get_params_dict())
-        if r.status_code != req.codes.ok:
-            r.raise_for_status()
-        with xr.open_dataset(BytesIO(r.content), engine="h5netcdf") as ds:
+        try:
+            ds = download_daymet(params, version)
             ds_list.append(ds)
+        except req.exceptions.HTTPError as ex:
+            logger.warning(f"Failed downloading Daymet file {params.get_file_name(version)}"
+                           f" for feature {params.feature_id}. Cause: {ex}")
+        except req.exceptions.Timeout as ex:
+            logger.warning(f"Timeout during downloading Daymet file {params.get_file_name(version)}"
+                           f" for feature {params.feature_id}. Cause: {ex}")
     result = xr.concat(ds_list, dim="time").sortby("time")
     if version == "v3":
-        result.to_netcdf("{}/{}_daymet_v3_{}_na.nc4".format(outpath, feature, params.variable))
+        path = "{}/{}_daymet_v3_{}_na.nc4"
     elif version == "v4":
-        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
+        path = "{}/{}_daymet_v4_daily_na_{}.nc4"
     else:
-        result.to_netcdf("{}/{}_daymet_v4_daily_na_{}.nc4".format(outpath, feature, params.variable))
+        path = "{}/{}_daymet_v4_daily_na_{}.nc4"
+    result.to_netcdf(path.format(outpath, feature, params.variable))
+    logger.info(f"Stored Daymet files into file {path.format(outpath, feature, params.variable)}")
     logger.info(f"Finished downloading {counter} Daymet files")
+
+
+def download_multiple_daymet_datasets(params_list: list, outpath: str, version: str):
+    """
+    Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature
+    using the given list of DaymetDownloadParameters.
+
+    Parameters
+    ----------
+    params_list: list
+        List of request parameters
+    outpath: str
+        Path to store the datasets within a single NetCDF file
+    version: str
+        Version of the Daymet dataset (supported: v3, v4)
+
+    """
+    counter = 0
+    for params in params_list:
+        counter += 1
+        logger.info(f"Downloading Daymet file {counter} of {len(params_list)}: "
+                     f"{params.get_file_name(version)} for feature {params.feature_id}")
+        try:
+            download_daymet(params, version, outpath)
+        except req.exceptions.HTTPError as ex:
+            logger.warning(f"Failed downloading Daymet file {params.get_file_name(version)}"
+                           f" for feature {params.feature_id}. Cause: {ex}")
+        except req.exceptions.Timeout as ex:
+            logger.warning(f"Timeout during downloading Daymet file {params.get_file_name(version)}"
+                           f" for feature {params.feature_id}. Cause: {ex}")

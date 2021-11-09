@@ -257,10 +257,10 @@ def create_daymet_download_params(config: DaymetDownloadConfig) -> list:
     params_list = []
 
     features = gpd.read_file(config.geo_file)
+    features[config.id_col] = features[config.id_col].astype(str)
     if config.ids is None:
         config.ids = features[config.id_col].tolist()
     for feature_id in config.ids:
-        features[config.id_col] = features[config.id_col].astype(str)
         feature = features[features[config.id_col] == feature_id]
         if feature.empty:
             logger.warning(f"No feature with id {feature_id} exists in file {config.geo_file}. Download will be skipped.")

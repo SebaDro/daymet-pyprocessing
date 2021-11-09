@@ -324,7 +324,7 @@ def download_daymet(params: DaymetDownloadParameters, version: str, outpath: str
         but returned as xarray.Dataset
 
     """
-    r = req.get(params.get_request_url(version), params=params.get_params_dict(), timeout=10)
+    r = req.get(params.get_request_url(version), params=params.get_params_dict(), timeout=60)
     if r.status_code != req.codes.ok:
         r.raise_for_status()
     if outpath is not None:

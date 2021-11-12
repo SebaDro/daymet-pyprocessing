@@ -410,6 +410,9 @@ def download_multiple_daymet_datasets(params_list: list, outpath: str, version: 
         except req.exceptions.HTTPError as ex:
             logger.warning(f"Failed downloading Daymet file {params.get_file_name(version)}"
                            f" for feature {params.feature_id}. Cause: {ex}")
+        except req.exceptions.ConnectionError as ex:
+            logger.warning(f"Connection failed when trying to download Daymet file {params.get_file_name(version)}"
+                           f" for feature {params.feature_id}. Cause: {ex}")
         except req.exceptions.Timeout as ex:
             logger.warning(f"Timeout during downloading Daymet file {params.get_file_name(version)}"
                            f" for feature {params.feature_id}. Cause: {ex}")

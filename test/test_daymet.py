@@ -1,5 +1,5 @@
 import unittest
-from scripts import daymet
+from scripts import download
 import datetime
 
 
@@ -9,7 +9,7 @@ class TestDaymet(unittest.TestCase):
         self.__download_config_path = "data/test-download-config.yml"
 
     def test_read_daymet_download_config(self):
-        config = daymet.read_daymet_download_config(self.__download_config_path)
+        config = download.read_daymet_download_config(self.__download_config_path)
 
         self.assertEqual(config.geo_file, "./data/features.geojson")
         self.assertEqual(config.id_col, "id")
@@ -22,8 +22,8 @@ class TestDaymet(unittest.TestCase):
         self.assertEqual(config.version, "v4")
 
     def test_create_daymet_download_params(self):
-        config = daymet.read_daymet_download_config(self.__download_config_path)
-        params = daymet.create_daymet_download_params(config)
+        config = download.read_daymet_download_config(self.__download_config_path)
+        params = download.create_daymet_download_params(config)
 
         self.assertEqual(len(params), 22)
         self.assertEqual(params[0].get_file_name(config.version), "daymet_v4_daily_na_prcp_2000.nc")

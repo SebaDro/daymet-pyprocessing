@@ -175,35 +175,6 @@ class DaymetDownloadParameters:
                "accept": "netcdf4"}
 
 
-class DaymetPreprocessingConfig:
-    def __init__(self, automatic_mode: bool, features: list, directory: str, variables: list, version: str):
-        self.__automatic_mode = automatic_mode
-        self.__features = features
-        self.__directory = directory
-        self.__variables = variables
-        self.__version = version
-
-    @property
-    def automatic_mode(self):
-        return self.__automatic_mode
-
-    @property
-    def features(self):
-        return self.__features
-
-    @property
-    def directory(self):
-        return self.__directory
-
-    @property
-    def variables(self):
-        return self.__variables
-
-    @property
-    def version(self):
-        return self.__version
-
-
 def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
     """
     Reads configuration parameters from a *.yml file.

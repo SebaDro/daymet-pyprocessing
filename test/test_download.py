@@ -3,7 +3,7 @@ from scripts import download
 import datetime
 
 
-class TestDaymet(unittest.TestCase):
+class TestDownload(unittest.TestCase):
 
     def setUp(self):
         self.__download_config_path = "data/test-download-config.yml"

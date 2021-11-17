@@ -1,18 +1,20 @@
-import sys
 import logging
 import logging.config
 import yaml
 from scripts import download
+import argparse
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Download some Daymet files.')
+    parser.add_argument('config', type=str, help="Path to a config file that controls the download process")
+    args = parser.parse_args()
+
     with open("./config/logging.yml", "r") as stream:
         log_config = yaml.load(stream, Loader=yaml.FullLoader)
         logging.config.dictConfig(log_config)
 
-    if len(sys.argv) != 2:
-        raise ValueError("Missing argument for config file path!")
-    config_path = sys.argv[1]
+    config_path = args.config
     config = download.read_daymet_download_config(config_path)
     if config is None:
         raise SystemExit("Could not read configuration file.")

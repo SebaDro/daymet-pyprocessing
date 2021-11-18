@@ -72,19 +72,19 @@ def combine_multiple_daymet_files(files: list, outpath: str, variable: str, feat
         xds.to_netcdf(path)
 
 
-def get_file_name(variable: str, feature_id: str, version: str):
+def get_file_name(feature_id: str, version: str):
     if version == "v3":
-        return get_v3_file_name(variable, feature_id)
+        return get_v3_file_name(feature_id)
     elif version == "v4":
-        return get_v4_file_name(variable, feature_id)
+        return get_v4_file_name(feature_id)
     else:
         logger.warning(f"Unsupported version {version}. Returned v4 file name.")
-        return get_v4_file_name(variable, feature_id)
+        return get_v4_file_name(feature_id)
 
 
-def get_v3_file_name(variable: str, feature_id: str):
-    return "{}_daymet_v3_{}_na.nc4".format(feature_id, variable)
+def get_v3_file_name(feature_id: str):
+    return "{}_daymet_v3_na.nc4".format(feature_id)
 
 
-def get_v4_file_name(variable: str, feature_id: str):
-    return "{}_daymet_v4_daily_na_{}.nc".format(feature_id, variable)
+def get_v4_file_name(feature_id: str):
+    return "{}_daymet_v4_daily_na.nc".format(feature_id)

@@ -1,8 +1,9 @@
+dataDir: "./data"
+geoFile: "./data/features.geojson"
 ids:
   - "0"
   - "1"
 outputDir: "./output"
-rootDir: "./data"
 variables:
   - "prcp"
 version: "v4" #Supported: v3, v4

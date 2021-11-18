@@ -11,7 +11,8 @@ class TestProcessing(unittest.TestCase):
         config = processing.read_daymet_preprocessing_config(self.__download_config_path)
 
         self.assertListEqual(config.ids, ["0", "1"])
+        self.assertEqual(config.data_dir, "./data")
+        self.assertEqual(config.geo_file, "./data/features.geojson")
         self.assertEqual(config.output_dir,  "./output")
-        self.assertEqual(config.root_dir, "./data")
         self.assertListEqual(config.variables, ["prcp"])
         self.assertEqual(config.version, "v4")

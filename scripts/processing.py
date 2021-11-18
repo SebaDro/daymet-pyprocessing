@@ -7,12 +7,21 @@ logger = logging.getLogger(__name__)
 
 
 class DaymetProcessingConfig:
-    def __init__(self, ids: list, output_dir: str, root_dir: str, variables: list, version: str):
+    def __init__(self, geo_file: str, data_dir: str, ids: list, output_dir: str,  variables: list, version: str):
+        self.__geo_file = geo_file
+        self.__data_dir = data_dir
         self.__ids = ids
         self.__output_dir = output_dir
-        self.__root_dir = root_dir
         self.__variables = variables
         self.__version = version
+
+    @property
+    def data_dir(self):
+        return self.__data_dir
+
+    @property
+    def geo_file(self):
+        return self.__geo_file
 
     @property
     def ids(self):
@@ -21,10 +30,6 @@ class DaymetProcessingConfig:
     @property
     def output_dir(self):
         return self.__output_dir
-
-    @property
-    def root_dir(self):
-        return self.__root_dir
 
     @property
     def variables(self):
@@ -53,7 +58,7 @@ def read_daymet_preprocessing_config(path: str) -> DaymetProcessingConfig:
     with open(path, 'r') as stream:
         try:
             config = yaml.safe_load(stream)
-            return DaymetProcessingConfig(config["ids"], config["outputDir"], config["rootDir"],
+            return DaymetProcessingConfig(config["geoFile"], config["dataDir"], config["ids"], config["outputDir"],
                                           config["variables"], config["version"])
         except yaml.YAMLError as ex:
             print("Error reading config file {}".format(ex))

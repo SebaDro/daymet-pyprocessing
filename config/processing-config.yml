@@ -1,0 +1,8 @@
+outputDir: "./output"
+rootDir: "./data"
+variables:
+  - "prcp"
+  - "tmax"
+version: "v4" #Supported: v3, v4
+# Additional processing parameters may be specified below. Just uncomment and enhance the config file.
+# operationParameters:

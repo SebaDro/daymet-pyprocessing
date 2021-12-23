@@ -49,7 +49,7 @@ def discover_daymet_files(data_dir: str, variables: list):
     return file_dict
 
 
-def discover_daymet_files_for_id(data_dir: str, id: str, variables: list):
+def discover_daymet_files_for_id(root_data_dir: str, id: str, variables: list):
     """
     Discovers all Daymet NetCDF files from a root directory for a given id and specified variables.
 
@@ -61,7 +61,7 @@ def discover_daymet_files_for_id(data_dir: str, id: str, variables: list):
 
     Parameters
     ----------
-    data_dir: str
+    root_data_dir: str
         Root data dir
     id: str
         ID which will be used to discover files for the same region in the different variable folders
@@ -77,7 +77,7 @@ def discover_daymet_files_for_id(data_dir: str, id: str, variables: list):
     """
     file_list = []
     for variable in variables:
-        data_dir = os.path.join(data_dir, variable, id)
+        data_dir = os.path.join(root_data_dir, variable, id)
         files = glob.glob(f"{data_dir}/{id}*{variable}*")
         if not files:
             logger.warning(f"No files found in path {data_dir} for variable {variable} and basin {id}")

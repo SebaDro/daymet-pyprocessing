@@ -100,7 +100,7 @@ def combine(config: DaymetProcessingConfig):
             logger.info(f"Successfully combined and stored {len(files)} files in file {path} for id {key}..")
     else:
         for key in config.ids:
-            logger.info(f"Discovering Daymet files for features {config.ids} and variables {config.variables}")
+            logger.info(f"Discovering Daymet files for feature '{key}' and variables {config.variables}")
             files = ioutils.discover_daymet_files_for_id(config.data_dir, key, config.variables)
             logger.info(f"Successfully discovered {len(files)} files for id {key}. Start combining ...")
             path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, key, config.version)
@@ -120,7 +120,7 @@ def log_metadata(variables: list, meta_dict: dict):
         Dictionary with metadata information about xarray.Dataset
 
     """
-    logger.debug(f"Dataset contains {len(meta_dict)} variables: {meta_dict.keys()}")
+    logger.debug(f"Dataset contains {len(meta_dict)} variables: {list(meta_dict.keys())}")
     for v in variables:
         if v in meta_dict:
             logger.debug(f"Variable '{v}' contains {len(meta_dict[v])} timeseries values from {meta_dict[v][0]} to "

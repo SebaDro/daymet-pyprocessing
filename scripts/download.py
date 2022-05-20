@@ -16,7 +16,7 @@ daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 
 
 class DaymetDownloadConfig:
     def __init__(self, name: str, variable: str, start_time: datetime.datetime, end_time: datetime.datetime,
-                 output_dir: str, single_file_storage: bool, version: str):
+                 output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
         self.__name = name
         self.__variable = variable
         self.__start_time = start_time
@@ -24,6 +24,7 @@ class DaymetDownloadConfig:
         self.__output_dir = output_dir
         self.__single_file_storage = single_file_storage
         self.__version = version
+        self.__read_timeout = read_timeout
 
     @property
     def name(self):
@@ -53,11 +54,15 @@ class DaymetDownloadConfig:
     def version(self):
         return self.__version
 
+    @property
+    def read_timeout(self):
+        return self.__read_timeout
+
 
 class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
     def __init__(self, geo_file: str, id_col: str, ids: list, name: str, variable: str, start_time: datetime.datetime,
-                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str):
-        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version)
+                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
         self.__geo_file = geo_file
         self.__id_col = id_col
         self.__ids = ids
@@ -81,8 +86,8 @@ class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
 
 class DaymetDownloadBboxConfig(DaymetDownloadConfig):
     def __init__(self, bbox: list, name: str, variable: str, start_time: datetime.datetime,
-                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str):
-        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version)
+                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
         self.__bbox = bbox
 
     @property
@@ -219,14 +224,14 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
             end_time = datetime.datetime.strptime(config["timeFrame"]["endTime"], "%Y-%m-%dT%H:%M:%S")
             if "bbox" in config:
                 return DaymetDownloadBboxConfig(config["bbox"], config["name"], config["variable"], start_time, end_time,
-                                                config["outputDir"], config["singleFileStorage"], config["version"])
+                                                config["outputDir"], config["singleFileStorage"], config["version"], config["readTimeout"])
             elif "geo" in config:
                 ids = None
                 if "ids" in config["geo"]:
                     ids = config["geo"]["ids"]
                 return DaymetDownloadGeofileConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["name"],
                                                    config["variable"], start_time, end_time, config["outputDir"],
-                                                   config["singleFileStorage"], config["version"])
+                                                   config["singleFileStorage"], config["version"], config["readTimeout"])
             else:
                 raise ValueError("Config must contain at least one of the following definitions: 'geo', 'bbox'}")
         except yaml.YAMLError:
@@ -325,11 +330,11 @@ def create_daymet_download_params(start_time, end_time, variable, name, minx, mi
         params_list.append(start_year_params)
 
         for year in range(start_time.year + 1, end_time.year):
-            start_time = datetime.datetime.strptime("{}-01-01T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
-            end_time = datetime.datetime.strptime("{}-12-31T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
+            current_start = datetime.datetime.strptime("{}-01-01T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
+            current_end = datetime.datetime.strptime("{}-12-31T12:00:00".format(year), "%Y-%m-%dT%H:%M:%S")
             params_list.append(DaymetDownloadParameters(year=year, variable=variable,
                                                         name=name, west=minx, south=miny, east=maxx,
-                                                        north=maxy, start_time=start_time, end_time=end_time))
+                                                        north=maxy, start_time=current_start, end_time=current_end))
 
         end_year_start_time = datetime.datetime.strptime("{}-01-01T12:00:00".format(end_time.year),
                                                          "%Y-%m-%dT%H:%M:%S")
@@ -345,7 +350,7 @@ def create_daymet_download_params(start_time, end_time, variable, name, minx, mi
     return params_list
 
 
-def download_daymet(params: DaymetDownloadParameters, version: str, outpath: str = None):
+def download_daymet(params: DaymetDownloadParameters, version: str, timeout: int, outpath: str = None):
     """
     Downloads a certain dataset in NetCDF format from the NetCDF Subset Service for Daymet data by using the given
     DaymetDownloadParameters.
@@ -361,7 +366,7 @@ def download_daymet(params: DaymetDownloadParameters, version: str, outpath: str
         but returned as xarray.Dataset
 
     """
-    r = req.get(params.get_request_url(version), params=params.get_params_dict(), timeout=60)
+    r = req.get(params.get_request_url(version), params=params.get_params_dict(), timeout=timeout)
     if r.status_code != req.codes.ok:
         r.raise_for_status()
     if outpath is not None:
@@ -377,7 +382,7 @@ def download_daymet(params: DaymetDownloadParameters, version: str, outpath: str
             return ds
 
 
-def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str):
+def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str, timeout: int):
     """
     Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature
     using the given list of DaymetDownloadParameters. The single NetCDF datasets will be concatenated and stored within
@@ -402,7 +407,7 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
         logger.info(f"Downloading Daymet file {counter} of {len(params_list)}: {params.get_file_name(version)}"
                     f" for feature {params.name}")
         try:
-            ds = download_daymet(params, version)
+            ds = download_daymet(params, version, timeout)
             ds_list.append(ds)
         except req.exceptions.HTTPError as ex:
             logger.warning(f"Failed downloading Daymet file {params.get_file_name(version)}"
@@ -422,7 +427,7 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
     logger.info(f"Finished downloading {counter} Daymet files")
 
 
-def download_multiple_daymet_datasets(params_list: list, outpath: str, version: str):
+def download_multiple_daymet_datasets(params_list: list, outpath: str, version: str, timeout: int):
     """
     Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature
     using the given list of DaymetDownloadParameters.
@@ -443,7 +448,7 @@ def download_multiple_daymet_datasets(params_list: list, outpath: str, version: 
         logger.info(f"Downloading Daymet file {counter} of {len(params_list)}: "
                     f"{params.get_file_name(version)} for config/feature {params.name}")
         try:
-            download_daymet(params, version, outpath)
+            download_daymet(params, version, timeout, outpath)
         except req.exceptions.HTTPError as ex:
             logger.warning(f"Failed downloading Daymet file {params.get_file_name(version)}"
                            f" for config/feature {params.name}. Cause: {ex}")

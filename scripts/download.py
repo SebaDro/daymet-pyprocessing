@@ -263,6 +263,7 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> l
         params_list = create_daymet_download_params(config.start_time, config.end_time, config.variable,
                                                     config.name, minx, miny, maxx, maxy)
     elif isinstance(config, DaymetDownloadGeofileConfig):
+        params_list = []
         features = gpd.read_file(config.geo_file)
         features[config.id_col] = features[config.id_col].astype(str)
         if config.ids is None:
@@ -277,8 +278,9 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> l
                 maxx = feature.total_bounds[2]
                 maxy = feature.total_bounds[3]
 
-                params_list = create_daymet_download_params(config.start_time, config.end_time, config.variable,
+                params = create_daymet_download_params(config.start_time, config.end_time, config.variable,
                                                             feature_id, minx, miny, maxx, maxy)
+                params_list =params_list + params
     return params_list
 
 

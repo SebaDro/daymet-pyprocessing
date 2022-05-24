@@ -32,14 +32,14 @@ process. You'll find an exemplary _download-config.yml_ file inside _./config_ w
 You can also control processing Daymet data via the _process_daymet.py_ script by providing a configuration file. You'll
 find an exemplary _processing-config.yml_ file inside _./config_ which you can use as starting point.  
 
-| Config parameter  | Description                                                                                                                                                                                                                                                         |
-|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| _ids_                 | Identifier used to determine, which Daymet files should be considered for processing. Leave empty, if all Daymet files inside the `rootDir` should be considered.                                                                                                   |
-| _outputDir_           | Path to the output directory directory. Processing results will be stored here.                                                                                                                                                                                     |
-| _rootDir_             | Path of the root directory which contains the Daymet NetCDF files. Only files which are stored according to a certain folder structure (you'll find an example below) within this directory will be considered for processing.                                      |
-| _variables_           | Only a subset of the available Daymet datasets containing these variables will be considered for processing.                                                                                                                                                        |
-| _version_             | Version of the Daymet datasets.                                                                                                                                                                                                                                     |
-| _operationParameters_ | Additional parameters which can be used to control the Daymet processing. This is an optional parameter which contains operation specific parameters. For available operations you'll find a list of supported parameters below.                                     | 
+| Config parameter  | Description                                                                                                                                                                                                                    |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| _ids_                 | Identifier used to determine, which Daymet files should be considered for processing. Leave empty, if all Daymet files inside the `rootDir` should be considered.                                                              |
+| _outputDir_           | Path to the output directory directory. Processing results will be stored here.                                                                                                                                                |
+| _rootDir_             | Path of the root directory which contains the Daymet NetCDF files. Only files which are stored according to a certain folder structure (you'll find an example below) within this directory will be considered for processing. |
+| _variables_           | Only a subset of the available Daymet datasets containing these variables will be considered for processing.                                                                                                                   |
+| _version_             | Version of the Daymet datasets.                                                                                                                                                                                                |
+| _operationParameters_ | Additional parameters which can be used to control the Daymet processing. This is an optional parameter which contains operation specific parameters.                                                                          | 
 
 **Please note:** For some operations (e.g., merging multiple Daymet files) in order to discover all relevant files, folder
 structure and file naming must follow the following convention: `{root_dir}/{variable}/{id}/{id}_daymet_v4_daily_na_{variable}_*.nc.`
@@ -60,7 +60,7 @@ as well as the specified variable and timeframe will be used as request paramete
 ### Process Daymet data
 Prepare a config file as stated above and run the `process_daymet.py` script with the path to the config file as
 positional argument followed by a certain operation that should be applied to the Daymet files:
-`python process_daymet.py ./config/processing-config.yml {operation}`. Up to now, the operations below are supported:
+`python process_daymet.py {operation} ./config/processing-config.yml`. Up to now, the operations below are supported:
 - `merge`: Discovers related Daymet files for different variables and years, which will be combined into single NetCDF
   files. For each set of related Daymet files one single NetCDF file will be created. A set of related Daymet files
   comprises all NetCDF files which covers the same geospatial area but differ in the covered timespan and Daymet variables.

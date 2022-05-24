@@ -3,6 +3,9 @@ import yaml
 import xarray as xr
 import os
 import logging
+
+from typing import Tuple
+
 from scripts import ioutils
 
 logger = logging.getLogger(__name__)
@@ -151,7 +154,7 @@ def check_daymet_file(xds: xarray.Dataset):
     return meta_dict
 
 
-def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: str) -> tuple[str, dict]:
+def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: str) -> Tuple[str, dict]:
     """
     Combines mutliple Daymet NetCDF files into a single one by grouping variables
 
@@ -174,7 +177,7 @@ def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: 
     """
     path = os.path.join(outpath, get_file_name(key, version))
     with xr.open_mfdataset(files) as xds:
-        xds.to_netcdf(path)
+        xds.to_netcdf(path, engine='h5netcdf')
         meta_dict = check_daymet_file(xds)
         return path, meta_dict
 

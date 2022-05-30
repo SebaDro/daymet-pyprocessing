@@ -3,3 +3,5 @@ pyyaml
 requests
 h5netcdf
 xarray
+dask
+zarr

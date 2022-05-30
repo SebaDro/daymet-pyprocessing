@@ -8,3 +8,4 @@ dependencies:
   - requests
   - h5netcdf
   - xarray
+  - zarr

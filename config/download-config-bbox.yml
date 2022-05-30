@@ -1,11 +1,6 @@
-name: "geofile-download"
-geo:
-  file: "./data/features.geojson"
-  idCol: "id"
-  ids:
-    - "0"
-    - "1"
-    - "2"
+name: "bbox-download"
+bbox: [-73.73, 40.93, -73.72, 40.94]
+readTimeout: 120
 singleFileStorage: false
 timeFrame:
   startTime: "1980-01-01T12:00:00"

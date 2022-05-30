@@ -4,6 +4,7 @@ import xarray as xr
 import os
 import logging
 
+from dask.diagnostics import ProgressBar
 from typing import Tuple
 
 from scripts import ioutils
@@ -12,13 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 class DaymetProcessingConfig:
-    def __init__(self, data_dir: str,  output_dir: str,  variables: list, version: str, ids: list = None,
+    def __init__(self, data_dir: str,  output_dir: str,  variables: list, version: str, output_format: str, ids: list = None,
                  params: dict = None):
         self.__data_dir = data_dir
-        self.__ids = ids
         self.__output_dir = output_dir
         self.__variables = variables
         self.__version = version
+        self.__output_format = output_format
+        self.__ids = ids
         self.__params = params
 
     @property
@@ -49,6 +51,10 @@ class DaymetProcessingConfig:
     def params(self):
         return self.__params
 
+    @property
+    def output_format(self):
+        return self.__output_format
+
 
 def read_daymet_preprocessing_config(path: str) -> DaymetProcessingConfig:
     """
@@ -74,8 +80,8 @@ def read_daymet_preprocessing_config(path: str) -> DaymetProcessingConfig:
             params = None
             if "operationParameters" in config:
                 params = config["operationParameters"]
-            return DaymetProcessingConfig(config["rootDir"], config["outputDir"], config["variables"], config["version"],
-                                          ids, params)
+            return DaymetProcessingConfig(config["dataDir"], config["outputDir"], config["variables"], config["version"],
+                                          config["outputFormat"], ids, params)
         except yaml.YAMLError as ex:
             print("Error reading config file {}".format(ex))
         except KeyError as ex:
@@ -98,15 +104,17 @@ def combine(config: DaymetProcessingConfig):
         for key in file_dict:
             files = file_dict[key]
             logger.info(f"Successfully discovered {len(files)} files for id {key}. Start combining ...")
-            path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, key, config.version)
+            path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, config.output_format, key,
+                                                            config.version)
             log_metadata(config.variables, meta_dict)
-            logger.info(f"Successfully combined and stored {len(files)} files in file {path} for id {key}..")
+            logger.info(f"Successfully combined and stored {len(files)} files in file {path} for id {key}.")
     else:
         for key in config.ids:
             logger.info(f"Discovering Daymet files for feature '{key}' and variables {config.variables}")
             files = ioutils.discover_daymet_files_for_id(config.data_dir, key, config.variables)
             logger.info(f"Successfully discovered {len(files)} files for id {key}. Start combining ...")
-            path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, key, config.version)
+            path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, config.output_format, key,
+                                                            config.version)
             log_metadata(config.variables, meta_dict)
             logger.info(f"Successfully combined and stored {len(files)} files in file {path} for id {key}.")
 
@@ -154,7 +162,7 @@ def check_daymet_file(xds: xarray.Dataset):
     return meta_dict
 
 
-def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: str) -> Tuple[str, dict]:
+def combine_multiple_daymet_files(files: list, outpath: str, outformat: str, key: str, version: str) -> Tuple[str, dict]:
     """
     Combines mutliple Daymet NetCDF files into a single one by grouping variables
 
@@ -164,6 +172,8 @@ def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: 
         Path to the files that should be combined
     outpath: str
         Storage path for the resulting file
+    outformat: str
+        Output storage format
     key: str
         A key, which will be used for naming the resulting file
     version: str
@@ -175,26 +185,48 @@ def combine_multiple_daymet_files(files: list, outpath: str, key: str, version: 
         Path to the resulting file as well as metadata about it
 
     """
-    path = os.path.join(outpath, get_file_name(key, version))
+    path = os.path.join(outpath, get_file_name(key, version, outformat))
     with xr.open_mfdataset(files) as xds:
-        xds.to_netcdf(path, engine='h5netcdf')
+        if outformat == "netcdf":
+            save_as_netcdf(xds, path)
+        elif outformat == "zarr":
+            save_as_zarr(xds, path)
+        else:
+            logger.warning(f"Unsupported output format '{outformat}'. Combined dataset will be stored as NetCDF.")
+            save_as_netcdf(xds, path)
         meta_dict = check_daymet_file(xds)
         return path, meta_dict
 
 
-def get_file_name(feature_id: str, version: str):
-    if version == "v3":
-        return get_v3_file_name(feature_id)
-    elif version == "v4":
-        return get_v4_file_name(feature_id)
+def save_as_netcdf(xds, path):
+    with ProgressBar():
+        xds.to_netcdf(path, engine='h5netcdf')
+
+
+def save_as_zarr(xds, path):
+    with ProgressBar():
+        xds.to_zarr(path)
+
+
+def get_file_name(feature_id: str, version: str, outformat: str):
+    if outformat == "netcdf" and version == "v3":
+        return get_nc_v3_file_name(feature_id)
+    elif outformat == "netcdf" and version == "v4":
+        return get_nc_v4_file_name(feature_id)
+    elif outformat == "zarr":
+        return get_zarr_store_name(feature_id, version)
     else:
-        logger.warning(f"Unsupported version {version}. Returned v4 file name.")
-        return get_v4_file_name(feature_id)
+        logger.warning(f"Unsupported version {version}. Returned NetCDF v4 file name.")
+        return get_nc_v4_file_name(feature_id)
 
 
-def get_v3_file_name(feature_id: str):
-    return "{}_daymet_v3_na.nc4".format(feature_id)
+def get_nc_v3_file_name(feature_id: str):
+    return f"{feature_id}_daymet_v3_na.nc4"
 
 
-def get_v4_file_name(feature_id: str):
-    return "{}_daymet_v4_daily_na.nc".format(feature_id)
+def get_nc_v4_file_name(feature_id: str):
+    return f"{feature_id}_daymet_v4_daily_na.nc"
+
+
+def get_zarr_store_name(feature_id: str, version: str):
+    return f"{feature_id}_daymet_{version}_na.zarr"

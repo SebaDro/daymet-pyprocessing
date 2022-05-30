@@ -8,15 +8,15 @@ logger = logging.getLogger(__name__)
 def discover_daymet_files(data_dir: str, variables: list):
     """
     Discovers all Daymet NetCDF files from a root directory for given variables. This method will automatically discover
-    all sub-directories inside a variable directory and thus will return a dict with sub-directory name as key
-    and all NetCDF file paths belonging to these sub-directories as values.
+    all subdirectories inside a variable directory and thus will return a dict with subdirectory name as key
+    and all NetCDF file paths belonging to these subdirectories as values. Folder structure and file naming must follow
+    the following convention {root_dir}/{variable}/{sub_dir}/{sub_dir}_daymet_v4_daily_na_{variable}_*.nc. Note, that
+    {sub_dir} will be discovered automatically.
 
-    Folder structure and file naming must follow the following convention {root_dir}/{variable}/{id}/{id}_daymet_v4_daily_na_{variable}_*.nc.
-    E.g. for given variables [var1, var2] the method will discover within the directory {root_dir}/var1/123/ all NetCDF
-    files with filename 123_daymet_v4_daily_na_var1_*.nc and within the directory
-    {root_dir}/var2/123 all NetCDF files with filename 123_daymet_v4_daily_na_var2_*.nc. These file will be stored as
-    values for key 123 within the resulting dict. Files and directories that do not follow these conventions will be
-    ignored.
+    Examples: For given variables [var1, var2] the method will discover within the directory {root_dir}/var1/123 all NetCDF
+    files with filename 123_daymet_v4_daily_na_var1_*.nc and within the directory {root_dir}/var2/123 all NetCDF files
+    with filename 123_daymet_v4_daily_na_var2_*.nc. These file will be stored as values for key 123 within the resulting
+    dict. Files and directories that do not follow these conventions will be ignored.
 
     Parameters
     ----------

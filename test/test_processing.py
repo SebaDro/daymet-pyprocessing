@@ -12,7 +12,7 @@ class TestProcessing(unittest.TestCase):
 
         self.assertListEqual(config.ids, ["0", "1"])
         self.assertEqual(config.data_dir, "./data")
-        self.assertEqual(config.geo_file, "./data/features.geojson")
         self.assertEqual(config.output_dir,  "./output")
+        self.assertEqual(config.output_format, "netcdf")
         self.assertListEqual(config.variables, ["prcp"])
         self.assertEqual(config.version, "v4")

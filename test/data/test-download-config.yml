@@ -1,9 +1,11 @@
+name: "test"
 geo:
   file: "./data/features.geojson"
   idCol: "id"
   ids:
     - "0"
     - "1"
+readTimeout: 120
 singleFileStorage: true
 timeFrame:
   startTime: "2000-01-01T12:00:00"

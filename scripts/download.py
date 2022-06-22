@@ -284,8 +284,8 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> l
                 maxy = feature.total_bounds[3]
 
                 params = create_daymet_download_params(config.start_time, config.end_time, config.variable,
-                                                            feature_id, minx, miny, maxx, maxy)
-                params_list =params_list + params
+                                                       feature_id, minx, miny, maxx, maxy)
+                params_list = params_list + params
     return params_list
 
 

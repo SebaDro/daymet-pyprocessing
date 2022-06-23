@@ -1,0 +1,10 @@
+dataDir: "./data"
+outputDir: "./output"
+ids: # Do not set this parameter when all files within dataDir should be processed
+  - "1"
+  - "2"
+  - "3"
+outputFormat: "netcdf" # Supported: netcdf, zarr
+version: "v4" # Supported: v3, v4
+operationParameters:
+  aggregationMode: "mean" # Supported: mean, min, max

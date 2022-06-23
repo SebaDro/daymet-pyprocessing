@@ -1,0 +1,11 @@
+dataDir: "./data"
+outputDir: "./output"
+ids: # Do not set this parameter when all files within dataDir should be processed
+  - "1"
+  - "2"
+  - "3"
+outputFormat: "netcdf" # Supported: netcdf, zarr
+version: "v4" # Supported: v3, v4
+operationParameters:
+  geomPath: "C:/Users/Sebastian/Documents/Promotion/01_Data/CAMELS/CAMELS-US/camels-us-basins-selected-simplified.gpkg"
+  idCol: "hru_id"

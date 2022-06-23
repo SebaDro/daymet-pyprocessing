@@ -70,8 +70,8 @@ those files that refer to the same basin. NetCDF files with the same basin ID as
 related files and merged. 
 
 In order to discover all relevant files, folder structure and file naming must follow the conventions mentioned below:
-* `{root_dir}/{variable}/{id}/{id}_daymet_v4_daily_na_{variable}_*.nc.`
-* `{root_dir}/{variable}/{id}/{id}_daymet_v3_{variable}_*_na.nc4`
+* `{data_dir}/{variable}/{id}/{id}_daymet_v4_daily_na_{variable}_*.nc.`
+* `{data_dir}/{variable}/{id}/{id}_daymet_v3_{variable}_*_na.nc4`  
 These patterns follow the naming style for single downloaded files as a result of the _download.py_ script.
 
 | Config parameter                | Description                                                                                                                                                                                                                    |
@@ -88,7 +88,7 @@ The `clip` operation clips Daymet data for given polygonal geometries stored in 
 
 In order to discover all relevant files, folder structure and file naming must follow the conventions mentioned below:
 * `{data_dir}/{id}_daymet_v4_daily_na.nc`
-* `{root_dir}/{id}_daymet_v3_na.nc4`
+* `{data_dir}/{id}_daymet_v3_na.nc4`  
 These patterns follow the naming style for stored results of the _combine_ operation.
 
 | Config parameter               | Description                                                                                                                                                                                                                    |
@@ -106,7 +106,7 @@ The `aggregate` operation calculates the _mean_, _min_ or _max_ for Daymet data 
 
 In order to discover all relevant files, folder structure and file naming must follow the conventions mentioned below:
 * `{data_dir}/{id}_daymet_v4_daily_na.nc`
-* `{root_dir}/{id}_daymet_v3_na.nc4`
+* `{data_dir}/{id}_daymet_v3_na.nc4`  
 These patterns follow the naming style for stored results of the _combine_ operation.
 
 | Config parameter                      | Description                                                                                                                                                                                                                    |

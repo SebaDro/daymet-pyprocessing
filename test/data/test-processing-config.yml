@@ -4,6 +4,10 @@ ids:
   - "1"
 outputDir: "./output"
 outputFormat: "netcdf"
-variables:
-  - "prcp"
 version: "v4" #Supported: v3, v4
+operationParameters:
+  variables:
+    - "prcp"
+    - "tmax"
+    - "tmin"
+

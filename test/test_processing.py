@@ -14,5 +14,5 @@ class TestProcessing(unittest.TestCase):
         self.assertEqual(config.data_dir, "./data")
         self.assertEqual(config.output_dir,  "./output")
         self.assertEqual(config.output_format, "netcdf")
-        self.assertListEqual(config.variables, ["prcp"])
+        self.assertListEqual(config.params["variables"], ["prcp", "tmax", "tmin"])
         self.assertEqual(config.version, "v4")

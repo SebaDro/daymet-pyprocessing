@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def discover_daymet_files(data_dir: str, variables: list, version: str):
+def discover_yearly_daymet_files(data_dir: str, variables: list, version: str):
     """
     Discovers all Daymet NetCDF files from a root directory for given variables. This method will automatically discover
     all subdirectories inside a variable directory and thus will return a dict with subdirectory name as key
@@ -59,7 +59,7 @@ def discover_daymet_files(data_dir: str, variables: list, version: str):
     return file_dict
 
 
-def discover_daymet_files_for_id_and_variable(root_data_dir: str, id: str, variables: list, version: str):
+def discover_yearly_daymet_files_for_id_and_variable(root_data_dir: str, id: str, variables: list, version: str):
     """
     Discovers all Daymet NetCDF files from a root directory for a given id and specified variables.
 
@@ -147,7 +147,7 @@ def discover_daymet_file_for_id(data_dir: str, basin_id: str, version: str):
     return files[0]
 
 
-def simple_file_discovery(data_dir: str, version):
+def discover_daymet_files(data_dir: str, version):
     if version == "v3":
         pattern = f"{data_dir}/*_daymet_v3_na.nc4"
     elif version == "v4":

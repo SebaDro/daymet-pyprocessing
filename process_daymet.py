@@ -7,7 +7,7 @@ from scripts import processing
 
 def main():
     parser = argparse.ArgumentParser(description='Process some Daymet files.')
-    parser.add_argument('operation', type=str, choices=['merge', 'clip'], help="Merge or clip Daymet files.")
+    parser.add_argument('operation', type=str, choices=['merge', 'clip', 'aggregate'], help="Process Daymet files.")
     parser.add_argument('config', type=str, help="Path to a config file that controls the operation process")
     args = parser.parse_args()
 
@@ -30,6 +30,13 @@ def main():
             logging.info(f"Start clipping Daymet files for features {config.ids} stored in {config.data_dir}.")
         processing.clip(config)
         logging.info(f"Finished clipping Daymet files.")
+    if args.operation == "aggregate":
+        if config.ids is None:
+            logging.info(f"Start aggregating Daymet files for all files stored in {config.data_dir}.")
+        else:
+            logging.info(f"Start aggregating Daymet files for IDs {config.ids} stored in {config.data_dir}.")
+        processing.aggregate(config)
+        logging.info(f"Finished aggregating Daymet files.")
     else:
         raise SystemExit(f"Unsupported operation '{args.operation}'.")
 

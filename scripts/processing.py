@@ -130,6 +130,12 @@ def clip(config: DaymetProcessingConfig):
     geom_path = config.params["geomPath"]
     id_col = config.params["idCol"]
 
+    res_postfix = None
+    if config.data_dir == config.output_dir:
+        logger.warning(f"Input data directory and output directory are the same. Resulting files will be postfixed with"
+                       f" '_clipped'")
+        res_postfix = "_clipped"
+
     features = gpd.read_file(geom_path)
     features = features.to_crs(daymet_proj_str)
 
@@ -151,7 +157,11 @@ def clip(config: DaymetProcessingConfig):
                 logger.error(f"No feature available for id '{basin_id}'. Clipping will be skipped.")
             else:
                 logger.info("Start clipping...")
-                out_path = os.path.join(config.output_dir, f"{basin_id}_daymet_v4_daily_na.nc")
+                if res_postfix is None:
+                    out_path = os.path.join(config.output_dir, os.path.basename(xds_path))
+                else:
+                    split_name = os.path.basename(xds_path).split(".")
+                    out_path = os.path.join(config.output_dir, f"{split_name[0]}_{res_postfix}.{split_name[1]}")
 
                 with xr.open_dataset(xds_path, decode_coords="all") as xds:
                     xds = xds.assign_coords(y=xds.y * 10 ** 3, x=xds.x * 10 ** 3)
@@ -161,8 +171,54 @@ def clip(config: DaymetProcessingConfig):
 
                     xds_clipped = xds.rio.clip(feature.geometry)
                     save(xds_clipped, out_path, config.output_format)
+                    logger.info(f"Successfully saved result in file {out_path}")
         except FileNotFoundError as e:
             logger.error(f"Skip clipping for basin {basin_id}: {e}")
+
+
+def aggregate(config: DaymetProcessingConfig):
+    aggregation_mode = config.params["aggregationMode"]
+    res_postfix = None
+    if config.data_dir == config.output_dir:
+        logger.warning(f"Input data directory and output directory are the same. Resulting files will be postfixed with"
+                       f" '{aggregation_mode}'")
+        res_postfix = aggregation_mode
+
+    file_paths = []
+    if config.ids is not None:
+        logger.info(f"Discovering Daymet files for IDs {config.ids} within directory '{config.data_dir}'")
+        for basin_id in config.ids:
+            try:
+                file = ioutils.discover_daymet_file_for_id(config.data_dir, basin_id, config.version)
+                file_paths.append(file)
+            except FileNotFoundError as e:
+                logger.error(f"Cannot calculate aggregation fo basin {basin_id}: {e}")
+        logger.info(f"Discovered {len(file_paths)} paths")
+    else:
+        logger.info(f"Discovering all Daymet files within directory '{config.data_dir}'")
+        files = ioutils.discover_daymet_files(config.data_dir, config.version)
+        file_paths.extend(files)
+        logger.info(f"Discovered {len(file_paths)} paths")
+
+    for path in file_paths:
+        with xr.open_dataset(path) as xds:
+            logger.info(f"Calculate {aggregation_mode} for file '{path}'.")
+            if aggregation_mode == "max":
+                xds_aggr = xds.max(dim=["y", "x"])
+            elif aggregation_mode == "min":
+                xds_aggr = xds.min(dim=["y", "x"])
+            elif aggregation_mode == "mean":
+                xds_aggr = xds.min(dim=["y", "x"])
+            else:
+                raise ValueError(f"Unsupported aggregation mode '{aggregation_mode}'. Supported modes: 'min', 'max', "
+                                 f"'mean'.")
+        if res_postfix is None:
+            out_path = os.path.join(config.output_dir, os.path.basename(path))
+        else:
+            split_name = os.path.basename(path).split(".")
+            out_path = os.path.join(config.output_dir, f"{split_name[0]}_{res_postfix}.{split_name[1]}")
+        save(xds_aggr, out_path, config.output_format)
+        logger.info(f"Successfully saved result in file {out_path}")
 
 
 def log_metadata(variables: list, meta_dict: dict):

@@ -419,9 +419,9 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
     if version == "v3":
         path = "{}/{}_daymet_v3_{}_na.nc4"
     elif version == "v4":
-        path = "{}/{}_daymet_v4_daily_na_{}.nc4"
+        path = "{}/{}_daymet_v4_daily_na_{}.nc"
     else:
-        path = "{}/{}_daymet_v4_daily_na_{}.nc4"
+        path = "{}/{}_daymet_v4_daily_na_{}.nc"
     result.to_netcdf(path.format(outpath, feature, params.variable))
     logger.info(f"Stored Daymet files into file {path.format(outpath, feature, params.variable)}")
     logger.info(f"Finished downloading {counter} Daymet files")

@@ -98,7 +98,7 @@ def combine(config: DaymetProcessingConfig):
     variables = config.params["variables"]
     if config.ids is None:
         logger.info(f"Discovering all Daymet files for variables {variables}")
-        file_dict = ioutils.discover_daymet_files(config.data_dir, variables)
+        file_dict = ioutils.discover_daymet_files(config.data_dir, variables, config.version)
         for key in file_dict:
             files = file_dict[key]
             logger.info(f"Successfully discovered {len(files)} files for id {key}. Start combining ...")
@@ -109,7 +109,7 @@ def combine(config: DaymetProcessingConfig):
     else:
         for key in config.ids:
             logger.info(f"Discovering Daymet files for feature '{key}' and variables {variables}")
-            files = ioutils.discover_daymet_files_for_id_and_variable(config.data_dir, key, variables)
+            files = ioutils.discover_daymet_files_for_id_and_variable(config.data_dir, key, variables, config.version)
             logger.info(f"Successfully discovered {len(files)} files for id {key}. Start combining ...")
             path, meta_dict = combine_multiple_daymet_files(files, config.output_dir, config.output_format, key,
                                                             config.version)
@@ -144,7 +144,7 @@ def clip(config: DaymetProcessingConfig):
     for basin_id in basin_ids:
         logger.info(f"Discovering Daymet files for ID '{basin_id}'")
         try:
-            xds_path = ioutils.discover_daymet_file_for_id(config.data_dir, basin_id)
+            xds_path = ioutils.discover_daymet_file_for_id(config.data_dir, basin_id, config.version)
             logger.info(f"Successfully discovered file {xds_path} files for ID '{basin_id}'.")
             feature = features[features[id_col] == basin_id]
             if feature.empty:

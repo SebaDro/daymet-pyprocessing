@@ -9,3 +9,4 @@ dependencies:
   - h5netcdf
   - xarray
   - zarr
+  - dask

@@ -83,7 +83,7 @@ These patterns follow the naming style for single downloaded files as a result o
 | _version_                       | Version of the Daymet datasets.                                                                                                                                                                                                |
 | _operationParameters.variables_ | Only a subset of the available Daymet datasets containing these variables will be considered for processing.                                                                                                                   |
   
-### Clipping Daymet data
+#### Clipping Daymet data
 The `clip` operation clips Daymet data for given polygonal geometries stored in a geo file.
 
 In order to discover all relevant files, folder structure and file naming must follow the conventions mentioned below:
@@ -101,7 +101,7 @@ These patterns follow the naming style for stored results of the _combine_ opera
 | _operationParameters.geomPath_ | Path to the file that contains polygonal geometries.                                                                                                                                                                           |
 | _operationParameters.idCol_    | Name of the ID column within the geo file.                                                                                                                                                                                     |
 
-### Aggregate Daymet data
+#### Aggregate Daymet data
 The `aggregate` operation calculates the _mean_, _min_ or _max_ for Daymet data across the combined 'x' and 'y' dimension.
 
 In order to discover all relevant files, folder structure and file naming must follow the conventions mentioned below:

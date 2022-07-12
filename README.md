@@ -9,8 +9,14 @@ North America, Hawaii, and Puerto Rico. Daymet Version 3 and Version 4 data are 
 via ORNL DAAC's Thematic Real-time Environmental Distributed Data Services (THREDDS).
 
 ## Get started
-For installing all required packages you can either use Conda or Pip. Therefore, this repo comes with an
+To install the Daymet PyProcessing package just use Pip.
+
+For installing all required packages you also can either use Conda or Pip. Therefore, this repo comes with an
 _environment.yml_ and a _requirements.txt_ in this repository, respectively.
+
+Note, that this project depends on GeoPandas, which may not install all required dependencies for some operations
+systems. In this case, you'll find installing instructions within the
+[GeoPandas documentation](https://geopandas.org/en/stable/getting_started/install.html).
 
 ## User Guide
 ### Download Daymet data

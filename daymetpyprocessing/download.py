@@ -3,7 +3,6 @@ import geopandas as gpd
 import yaml
 import logging
 import requests as req
-import h5netcdf
 import xarray as xr
 import os
 from io import BytesIO
@@ -17,8 +16,34 @@ daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 
 
 
 class DaymetDownloadConfig:
+    """
+    Configuration parameters that control the Daymet data download process
+    """
+
     def __init__(self, name: str, variable: str, start_time: datetime.datetime, end_time: datetime.datetime,
                  output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+        """
+
+        Parameters
+        ----------
+        name: str
+            Config name, used for creating a subfolder within the output directory
+        variable: str
+            Daymet variable to download
+        start_time: datetime.datetime
+            Start date
+        end_time: datetime.datetime
+            End date
+        output_dir: str
+            Directory, which is used for storing the downloaded datasets
+        single_file_storage: bool
+            Indicates whether to store each downloaded datasets and as separate file or concatenate it and store it
+            as one big NetCDF file.
+        version: str
+            Version of the Daymet data to download (Supported: v3, v4)
+        read_timeout: int
+            Request read time out in seconds
+        """
         self.__name = name
         self.__variable = variable
         self.__start_time = start_time
@@ -62,8 +87,41 @@ class DaymetDownloadConfig:
 
 
 class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
+    """
+    Enhancement of Daymet download configuration parameters that control the Geofile based download
+    """
+
     def __init__(self, geo_file: str, id_col: str, ids: list, name: str, variable: str, start_time: datetime.datetime,
-                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str,
+                 read_timeout: int):
+        """
+
+        Parameters
+        ----------
+        geo_file: str
+            Path to a file that contains geographic data
+        id_col: str
+            Name of the ID column of the geospatial objects
+        ids: List of str
+            List of IDs that define which geospatial objects to consider for download
+        name: str
+            Config name, used for creating a subfolder within the output directory
+        variable: str
+            Daymet variable to download
+        start_time: datetime.datetime
+            Start date
+        end_time: datetime.datetime
+            End date
+        output_dir: str
+            Directory, which is used for storing the downloaded datasets
+        single_file_storage: bool
+            Indicates whether to store each downloaded datasets and as separate file or concatenate it and store it
+            as one big NetCDF file.
+        version: str
+            Version of the Daymet data to download (Supported: v3, v4)
+        read_timeout: int
+            Request read time out in seconds
+        """
         super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
         self.__geo_file = geo_file
         self.__id_col = id_col
@@ -87,8 +145,37 @@ class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
 
 
 class DaymetDownloadBboxConfig(DaymetDownloadConfig):
+    """
+    Enhancement of Daymet download configuration parameters that control the bounding box based download
+    """
+
     def __init__(self, bbox: list, name: str, variable: str, start_time: datetime.datetime,
-                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+                 end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str,
+                 read_timeout: int):
+        """
+
+        Parameters
+        ----------
+        bbox: List of float
+            Bounding box WGS84 coordinates in the format [minx, miny, maxx, maxy]
+        name: str
+            Config name, used for creating a subfolder within the output directory
+        variable: str
+            Daymet variable to download
+        start_time: datetime.datetime
+            Start datetime
+        end_time: datetime.datetime
+            End datetime
+        output_dir: str
+            Directory, which is used for storing the downloaded datasets
+        single_file_storage: bool
+            Indicates whether to store each downloaded datasets and as separate file or concatenate it and store it
+            as one big NetCDF file.
+        version: str
+            Version of the Daymet data to download (Supported: v3, v4)
+        read_timeout: int
+            Request read time out in seconds
+        """
         super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
         self.__bbox = bbox
 
@@ -98,8 +185,36 @@ class DaymetDownloadBboxConfig(DaymetDownloadConfig):
 
 
 class DaymetDownloadParameters:
+    """
+    Wrapper for various parameters that are used for creating the request for downloading Daymet data
+    """
+
     def __init__(self, year: int, variable: str, name: str, north: float, west: float, east: float, south: float,
                  start_time: datetime.datetime, end_time: datetime.datetime):
+        """
+        Creates a new DaymetDownloadParameters instance
+
+        Parameters
+        ----------
+        year: str
+            Year of the Daymet data that should be downloaded
+        variable: str
+            Name of the variable for which Daymet data should be downloaded
+        name: str
+            Config name, used for creating a subfolder within the output directory
+        north: float
+            North coordinate (WGS 84)
+        west: float
+            West coordinate (WGS 84)
+        east: float
+            East coordinate (WGS 84)
+        south: float
+            South coordinate (WGS 84)
+        start_time: datetime.datetime
+            Start datetime
+        end_time: datetime.datetime
+            Dnd datetime
+        """
         self.__base_url_v3 = "https://thredds.daac.ornl.gov/thredds/ncss/ornldaac/1328/"
         self.__base_url_v4 = "https://thredds.daac.ornl.gov/thredds/ncss/ornldaac/1840/"
         self.__year = year
@@ -173,12 +288,12 @@ class DaymetDownloadParameters:
         return "daymet_v4_daily_na_{}_{}.nc".format(self.__variable, str(self.__year))
 
     def _get_v3_request_url(self):
-        return self.__base_url_v3\
-               + str(self.__year) + "/"\
+        return self.__base_url_v3 \
+               + str(self.__year) + "/" \
                + self._get_v3_file_name()
 
     def _get_v4_request_url(self):
-        return self.__base_url_v4\
+        return self.__base_url_v4 \
                + self._get_v4_file_name()
 
     def get_params_dict(self) -> dict:
@@ -193,15 +308,15 @@ class DaymetDownloadParameters:
 
         """
         return {"var": self.__variable,
-               "north": str(self.__north),
-               "west": str(self.__west),
-               "east": str(self.__east),
-               "south": str(self.__south),
-               "horizStride": "1",
-               "time_start": self.__start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-               "time_end": self.__end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-               "timeStride": "1",
-               "accept": "netcdf4"}
+                "north": str(self.__north),
+                "west": str(self.__west),
+                "east": str(self.__east),
+                "south": str(self.__south),
+                "horizStride": "1",
+                "time_start": self.__start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "time_end": self.__end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "timeStride": "1",
+                "accept": "netcdf4"}
 
 
 def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
@@ -225,22 +340,25 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
             start_time = datetime.datetime.strptime(config["timeFrame"]["startTime"], "%Y-%m-%dT%H:%M:%S")
             end_time = datetime.datetime.strptime(config["timeFrame"]["endTime"], "%Y-%m-%dT%H:%M:%S")
             if "bbox" in config:
-                return DaymetDownloadBboxConfig(config["bbox"], config["name"], config["variable"], start_time, end_time,
-                                                config["outputDir"], config["singleFileStorage"], config["version"], config["readTimeout"])
+                return DaymetDownloadBboxConfig(config["bbox"], config["name"], config["variable"], start_time,
+                                                end_time,
+                                                config["outputDir"], config["singleFileStorage"], config["version"],
+                                                config["readTimeout"])
             elif "geo" in config:
                 ids = None
                 if "ids" in config["geo"]:
                     ids = config["geo"]["ids"]
                 return DaymetDownloadGeofileConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["name"],
                                                    config["variable"], start_time, end_time, config["outputDir"],
-                                                   config["singleFileStorage"], config["version"], config["readTimeout"])
+                                                   config["singleFileStorage"], config["version"],
+                                                   config["readTimeout"])
             else:
                 raise ValueError("Config must contain at least one of the following definitions: 'geo', 'bbox'}")
         except yaml.YAMLError:
             logger.exception(f"Error reading daymet file.")
-        except KeyError as ex:
+        except KeyError:
             logger.exception(f"Missing config parameter.")
-        except ValueError as ex:
+        except ValueError:
             logger.exception(f"No valid format for 'timeFrame' value.")
 
 
@@ -278,7 +396,8 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> L
         for feature_id in config.ids:
             feature = features[features[config.id_col] == feature_id]
             if feature.empty:
-                logger.warning(f"No feature with id {feature_id} exists in file {config.geo_file}. Download will be skipped.")
+                logger.warning(
+                    f"No feature with id {feature_id} exists in file {config.geo_file}. Download will be skipped.")
             else:
                 minx = feature.total_bounds[0]
                 miny = feature.total_bounds[1]
@@ -291,20 +410,29 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> L
     return params_list
 
 
-def create_daymet_download_params(start_time, end_time, variable, name, minx, miny, maxx, maxy) -> List[DaymetDownloadParameters]:
+def create_daymet_download_params(start_time: datetime.datetime, end_time: datetime.datetime, variable: str, name: str,
+                                  minx: float, miny: float, maxx: float, maxy: float) -> List[DaymetDownloadParameters]:
     """
     Creates a list of DaymetDownloadParameters from DaymetDownloadBboxConfig parameters
 
     Parameters
     ----------
-    maxy
-    maxx
-    miny
-    minx
-    name
-    variable
-    end_time
-    start_time
+    start_time: datetime.datetime
+        Start datetime
+    end_time: datetime.datetime
+        End datetime
+    variable: str
+        Name of the Daymet variable
+    name: str
+        Name, used for creating a subfolder within the output directory
+    minx: float
+        Left x-coordinate (WGS84)
+    miny: float
+        Lower y-coordinate (WGS84)
+    maxx: float
+        Right x-coordinate (WGS84)
+    maxy: float
+        Upper y-coordinate (WGS84)
 
     Returns
     -------
@@ -359,6 +487,8 @@ def download_daymet(params: DaymetDownloadParameters, version: str, timeout: int
 
     Parameters
     ----------
+    timeout: int
+        Request read timeout
     params: DaymetDownloadParameters
         Parameters used for a single request
     version: str
@@ -384,7 +514,8 @@ def download_daymet(params: DaymetDownloadParameters, version: str, timeout: int
             return ds
 
 
-def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str, timeout: int):
+def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list, outpath: str, version: str,
+                                                timeout: int):
     """
     Downloads multiple datasets in NetCDF format from the NetCDF Subset Service for Daymet data for a single feature
     using the given list of DaymetDownloadParameters. The single NetCDF datasets will be concatenated and stored within
@@ -400,10 +531,13 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
         Path to store the datasets within a single NetCDF file
     version: str
         Version of the Daymet dataset (supported: v3, v4)
+    timeout: int
+        Request read timeout in seconds
 
     """
     ds_list = []
     counter = 0
+    variable = params_list[0].variable
     for params in params_list:
         counter += 1
         logger.info(f"Downloading Daymet file {counter} of {len(params_list)}: {params.get_file_name(version)}"
@@ -424,8 +558,8 @@ def download_and_merge_multiple_daymet_datasets(feature: str, params_list: list,
         path = "{}/{}_daymet_v4_daily_na_{}.nc"
     else:
         path = "{}/{}_daymet_v4_daily_na_{}.nc"
-    result.to_netcdf(path.format(outpath, feature, params.variable))
-    logger.info(f"Stored Daymet files into file {path.format(outpath, feature, params.variable)}")
+    result.to_netcdf(path.format(outpath, feature, variable))
+    logger.info(f"Stored Daymet files into file {path.format(outpath, feature, variable)}")
     logger.info(f"Finished downloading {counter} Daymet files")
 
 
@@ -442,6 +576,8 @@ def download_multiple_daymet_datasets(params_list: list, outpath: str, version: 
         Path to store the datasets within a single NetCDF file
     version: str
         Version of the Daymet dataset (supported: v3, v4)
+    timeout: int
+        Request read timeout in seconds
 
     """
     counter = 0

@@ -10,7 +10,7 @@ def main():
     parser.add_argument('config', type=str, help="Path to a config file that controls the download process")
     args = parser.parse_args()
 
-    with open("./config/logging.yml", "r") as stream:
+    with open("../config/logging.yml", "r") as stream:
         log_config = yaml.load(stream, Loader=yaml.FullLoader)
         logging.config.dictConfig(log_config)
 
@@ -32,7 +32,8 @@ def main():
                 download.download_and_merge_multiple_daymet_datasets(feature_id, params, config.output_dir,
                                                                      config.version, config.read_timeout)
         else:
-            download.download_multiple_daymet_datasets(params_list, config.output_dir, config.version, config.read_timeout)
+            download.download_multiple_daymet_datasets(params_list, config.output_dir, config.version,
+                                                       config.read_timeout)
         logging.info(f"Finished downloading {len(params_list)} Daymet file(s)")
     elif isinstance(config, download.DaymetDownloadBboxConfig):
         if config is None:

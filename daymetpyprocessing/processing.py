@@ -15,8 +15,30 @@ logger = logging.getLogger(__name__)
 
 
 class DaymetProcessingConfig:
+    """
+    Configuration parameters for controlling Daymet processing operations
+    """
+
     def __init__(self, data_dir: str,  output_dir: str, version: str, output_format: str, ids: list = None,
                  params: dict = None):
+        """
+        Creates a new DaymetProcessingConfig instance
+
+        Parameters
+        ----------
+        data_dir: str
+            Data directory that contains Daymet NetCDF files to process
+        output_dir: str
+            Directory, which will be used for storing the results
+        version: str
+            Version of the Daymet files ('v3' or 'v4')
+        output_format: str
+            Format of the resulting files (Supported: 'netcdf', 'zarr')
+        ids: List of str
+            List of IDs that are part of the Daymet file names and define which files to process
+        params: dict
+            Operation specific parameters
+        """
         self.__data_dir = data_dir
         self.__output_dir = output_dir
         self.__version = version
@@ -177,6 +199,15 @@ def clip(config: DaymetProcessingConfig):
 
 
 def aggregate(config: DaymetProcessingConfig):
+    """
+    Runs the aggregation operation for various Daymet NetCDF files in accordance to the specified configuration
+
+    Parameters
+    ----------
+    config: DaymetProcessingConfig
+        Holds configuration parameters that manage the processing flow
+
+    """
     aggregation_mode = config.params["aggregationMode"]
     res_postfix = None
     if config.data_dir == config.output_dir:
@@ -304,26 +335,66 @@ def save(xds, path, outformat):
         save_as_netcdf(xds, path)
 
 
-def save_as_netcdf(xds, path):
+def save_as_netcdf(xds: xarray.Dataset, path: str):
+    """
+    Save a xarray.Dataset as NetCDF and prints the progress
+
+    Parameters
+    ----------
+    xds: xarray.Dataset
+        Dataset
+    path: str
+        Path, which will be used to store the dataset as NetCDF file
+
+    """
     with ProgressBar():
         xds.to_netcdf(path, engine='h5netcdf')
 
 
 def save_as_zarr(xds, path):
+    """
+    Save a xarray.Dataset as Zarr and prints the progress
+
+    Parameters
+    ----------
+    xds: xarray.Dataset
+        Dataset
+    path: str
+        Path, which will be used to store the dataset as Zarr file
+
+    """
     with ProgressBar():
         xds.to_zarr(path)
 
 
-def get_file_name(feature_id: str, version: str, outformat: str):
+def get_file_name(file_id: str, version: str, outformat: str):
+    """
+    Determines the output file name in accordance to a file ID, the Daymet data version and the output format
+
+    Parameters
+    ----------
+    file_id:
+        ID which will be used to prefix the file
+    version:
+        Daymet version ('v3' or 'v4')
+    outformat
+        Format of the output
+
+    Returns
+    -------
+    str
+        The resulting file name
+
+    """
     if outformat == "netcdf" and version == "v3":
-        return get_nc_v3_file_name(feature_id)
+        return get_nc_v3_file_name(file_id)
     elif outformat == "netcdf" and version == "v4":
-        return get_nc_v4_file_name(feature_id)
+        return get_nc_v4_file_name(file_id)
     elif outformat == "zarr":
-        return get_zarr_store_name(feature_id, version)
+        return get_zarr_store_name(file_id, version)
     else:
         logger.warning(f"Unsupported version {version}. Returned NetCDF v4 file name.")
-        return get_nc_v4_file_name(feature_id)
+        return get_nc_v4_file_name(file_id)
 
 
 def get_nc_v3_file_name(feature_id: str):

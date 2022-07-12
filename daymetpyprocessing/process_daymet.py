@@ -11,7 +11,7 @@ def main():
     parser.add_argument('config', type=str, help="Path to a config file that controls the operation process")
     args = parser.parse_args()
 
-    with open("./config/logging.yml", "r") as stream:
+    with open("../config/logging.yml", "r") as stream:
         log_config = yaml.load(stream, Loader=yaml.FullLoader)
         logging.config.dictConfig(log_config)
 

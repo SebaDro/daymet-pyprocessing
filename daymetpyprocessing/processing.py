@@ -8,7 +8,7 @@ import geopandas as gpd
 from dask.diagnostics import ProgressBar
 from typing import Tuple
 
-from scripts import ioutils
+from daymetpyprocessing import ioutils
 
 daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 = -100 + x_0 = 0 + y_0 = 0 + ellps = WGS84 + units = m + no_defs"
 logger = logging.getLogger(__name__)

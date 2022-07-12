@@ -1,7 +1,7 @@
 import logging
 import logging.config
 import yaml
-from scripts import download
+from daymetpyprocessing import download
 import argparse
 
 

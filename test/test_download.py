@@ -1,5 +1,5 @@
 import unittest
-from scripts import download
+from daymetpyprocessing import download
 import datetime
 
 
@@ -10,7 +10,7 @@ class TestDownload(unittest.TestCase):
         self.__download_bbox_config_path = "data/test-download-config-bbox.yml"
 
     def test_read_daymet_download_config(self):
-        config = download.read_daymet_download_config(self.__download_config_path)
+        config = download.read_daymet_download_config(self.__download_geo_file_config_path)
 
         self.assertEqual("./data/features.geojson", config.geo_file)
         self.assertEqual("id", config.id_col)
@@ -24,7 +24,7 @@ class TestDownload(unittest.TestCase):
         self.assertEqual(120, config.read_timeout)
 
     def test_create_daymet_download_params_for_geo_file(self):
-        config = download.read_daymet_download_config(self.__download_config_path)
+        config = download.read_daymet_download_config(self.__download_geo_file_config_path)
         params = download.create_daymet_download_params_from_config(config)
 
         self.assertEqual(22, len(params))

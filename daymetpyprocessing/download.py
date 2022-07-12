@@ -8,6 +8,8 @@ import xarray as xr
 import os
 from io import BytesIO
 
+from typing import List
+
 logger = logging.getLogger(__name__)
 
 daymet_proj_str = "+proj = lcc + lat_1 = 25 + lat_2 = 60 + lat_0 = 42.5 + lon_0 = -100 + x_0 = 0 + y_0 = 0 + ellps = " \
@@ -242,7 +244,7 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
             logger.exception(f"No valid format for 'timeFrame' value.")
 
 
-def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> list:
+def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> List[DaymetDownloadParameters]:
     """
     Creates a list of DaymetDownloadParameters from config parameters
 
@@ -253,7 +255,7 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> l
 
     Returns
     -------
-    list
+    List[DaymetDownloadParameters]
         List containing DaymetDownloadParameters. Each entry can be used for requestinga single dataset from the NetCDF
         Subset Service for Daymet data
 
@@ -289,7 +291,7 @@ def create_daymet_download_params_from_config(config: DaymetDownloadConfig) -> l
     return params_list
 
 
-def create_daymet_download_params(start_time, end_time, variable, name, minx, miny, maxx, maxy) -> list:
+def create_daymet_download_params(start_time, end_time, variable, name, minx, miny, maxx, maxy) -> List[DaymetDownloadParameters]:
     """
     Creates a list of DaymetDownloadParameters from DaymetDownloadBboxConfig parameters
 
@@ -306,7 +308,7 @@ def create_daymet_download_params(start_time, end_time, variable, name, minx, mi
 
     Returns
     -------
-    list
+    List[DaymetDownloadParameters]
         List containing DaymetDownloadParameters. Each entry can be used for requesting a single dataset from the NetCDF
         Subset Service for Daymet data
 

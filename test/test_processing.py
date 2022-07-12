@@ -1,5 +1,5 @@
 import unittest
-from scripts import processing
+from daymetpyprocessing import processing
 
 
 class TestProcessing(unittest.TestCase):

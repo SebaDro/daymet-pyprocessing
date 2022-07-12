@@ -2,7 +2,7 @@ import argparse
 import logging
 import logging.config
 import yaml
-from scripts import processing
+from daymetpyprocessing import processing
 
 
 def main():

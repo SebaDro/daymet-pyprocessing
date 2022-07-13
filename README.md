@@ -20,12 +20,15 @@ systems. In this case, you'll find installing instructions within the
 
 ## User Guide
 ### Download Daymet data
-In order to run the _download_daymet.py_ script, you have to provide a configuration file which controls the download
+In order to run the _download_daymet_ script, you have to provide a configuration file which controls the download
 process. You'll find an exemplary config files inside _./config_ which you can use as starting point. The download script
 supports two modes: download for multiple areas based on a geo file and download for a fixed bounding box.
 
-Prepare a config file as stated above and run the `download_daymet.py` script with the path to the config file as
-only positional argument e.g., `python download_daymet.py ./config/download-config.yml`.
+Prepare a config file as stated above and run the `download_daymet` script with the path to the config file as
+only positional argument:
+```
+python download_daymet ./config/download-config.yml
+```
 
 The script will download Daymet datasets via NetCDF Subset Service (NCSS) for each geospatial object present in the
 provided geo file and indicated by the ids in the config file. To do so, the bounding box of each geospatial object
@@ -63,12 +66,14 @@ This mode takes a bbox parameter that will be directly used for download Daymet 
 
 ### Processing Daymet data
 This repo also comes with some processing routines. Up to now, it supports combining, clipping and aggregating Daymet
-NetCDF files. You can control processing Daymet data via the _process_daymet.py_ script by providing a configuration
+NetCDF files. You can control processing Daymet data via the _process_daymet_ script by providing a configuration
 file. You'll find different exemplary files inside _./config_ which you can use as starting point.  
 
-Prepare a config file as stated above and run the `process_daymet.py` script with the path to the config file as
+Prepare a config file as stated above and run the `process_daymet` script with the path to the config file as
 positional argument followed by a certain operation that should be applied to the Daymet files:
-`python process_daymet.py {operation} ./config/processing-config.yml`.
+```
+python process_daymet {operation} ./config/processing-config.yml
+```
 
 #### Combining Daymet data
 The `combine` discovers multiple Daymet NetCDF files which have been downloaded with the _download.py_ script and merges

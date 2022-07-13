@@ -1,10 +1,10 @@
 # Daymet PyProcessing
-This repository provides various utility scripts for downloading Daymet datasets. Originally, this project was intended
-to prepare Daymet surface data for basins of the CAMELS-US dataset. However, the scripts provided in this repo can be
+This repository provides various utility scripts for downloading Daymet datasets [[1](#1), [2](#2)]. Originally, this project was intended
+to prepare Daymet surface data for basins of the CAMELS-US dataset [[3]](#3). However, the scripts provided in this repo can be
 used for any other geospatial objects with polygon geometry.
 
 ## Daymet data
-Damet data contain gridded estimates of daily weather and climatology parameters at a 1 km x 1 km raster for  
+Daymet data contain gridded estimates of daily weather and climatology parameters at a 1 km x 1 km raster for  
 North America, Hawaii, and Puerto Rico. Daymet Version 3 and Version 4 data are provided by ORNL DAAC and can be 
 via ORNL DAAC's Thematic Real-time Environmental Distributed Data Services (THREDDS).
 
@@ -130,11 +130,14 @@ These patterns follow the naming style for stored results of the _combine_ opera
 | _operationParameters.aggregationMode_ | Defines which aggregation operation should be performed. Supported: mean, min, max                                                                                                                                             |
 
 ## References
+<a id="1">[1]</a>
 Thornton, P.E., M.M. Thornton, B.W. Mayer, Y. Wei, R. Devarakonda, R.S. Vose, and R.B. Cook. 2016. _Daymet: Daily Surface
 Weather Data on a 1-km Grid for North America, Version 3_. ORNL DAAC, Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1328
 
+<a id="2">[2]</a>
 Thornton, M.M., R. Shrestha, Y. Wei, P.E. Thornton, S. Kao, and B.E. Wilson. 2020. _Daymet: Daily Surface Weather Data 
 on a 1-km Grid for North America, Version 4_. ORNL DAAC, Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1840
 
+<a id="3">[3]</a>
 Newman, A., Sampson, K., Clark, M. P., Bock, A., Viger, R. J., Blodgett, D. (2014). _A large-sample
 watershed-scalehydrometeorological dataset for the contiguous USA_. Boulder, CO: UCAR/NCAR. https://dx.doi.org/10.5065/D6MW2F4D

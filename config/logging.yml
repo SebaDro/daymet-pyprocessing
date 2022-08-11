@@ -9,7 +9,7 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
-  scripts:
+  daymetpyprocessing:
     level: DEBUG
     handlers: [console]
     propagate: no

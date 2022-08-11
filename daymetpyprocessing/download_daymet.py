@@ -4,18 +4,21 @@ import yaml
 from daymetpyprocessing import download
 import argparse
 
+def setup_logging(logging_config_path: str):
+    with open(logging_config_path, "r") as stream:
+        log_config = yaml.load(stream, Loader=yaml.FullLoader)
+        logging.config.dictConfig(log_config)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Download some Daymet files.')
     parser.add_argument('config', type=str, help="Path to a config file that controls the download process")
     args = parser.parse_args()
 
-    with open("../config/logging.yml", "r") as stream:
-        log_config = yaml.load(stream, Loader=yaml.FullLoader)
-        logging.config.dictConfig(log_config)
-
     config_path = args.config
     config = download.read_daymet_download_config(config_path)
+    setup_logging(config.logging_config)
+
     if isinstance(config, download.DaymetDownloadGeofileConfig):
         if config is None:
             raise SystemExit("Could not read configuration file.")

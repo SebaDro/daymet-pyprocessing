@@ -4,6 +4,7 @@ ids: # Do not set this parameter when all files within dataDir should be process
   - "1"
   - "2"
   - "3"
+loggingConfig: "./config/logging.yml"
 outputFormat: "netcdf" # Supported: netcdf, zarr
 version: "v4" # Supported: v3, v4
 operationParameters:

@@ -19,7 +19,7 @@ class DaymetProcessingConfig:
     Configuration parameters for controlling Daymet processing operations
     """
 
-    def __init__(self, data_dir: str,  output_dir: str, version: str, output_format: str, ids: list = None,
+    def __init__(self, data_dir: str, logging_config: str,  output_dir: str, version: str, output_format: str, ids: list = None,
                  params: dict = None):
         """
         Creates a new DaymetProcessingConfig instance
@@ -28,6 +28,8 @@ class DaymetProcessingConfig:
         ----------
         data_dir: str
             Data directory that contains Daymet NetCDF files to process
+        logging_config: str
+            Path to a logging configuration file
         output_dir: str
             Directory, which will be used for storing the results
         version: str
@@ -40,6 +42,7 @@ class DaymetProcessingConfig:
             Operation specific parameters
         """
         self.__data_dir = data_dir
+        self.__logging_config = logging_config
         self.__output_dir = output_dir
         self.__version = version
         self.__output_format = output_format
@@ -49,6 +52,10 @@ class DaymetProcessingConfig:
     @property
     def data_dir(self):
         return self.__data_dir
+
+    @property
+    def logging_config(self):
+        return self.__logging_config
 
     @property
     def ids(self):
@@ -99,8 +106,8 @@ def read_daymet_preprocessing_config(path: str) -> DaymetProcessingConfig:
             params = None
             if "operationParameters" in config:
                 params = config["operationParameters"]
-            return DaymetProcessingConfig(config["dataDir"], config["outputDir"], config["version"],
-                                          config["outputFormat"], ids, params)
+            return DaymetProcessingConfig(config["dataDir"], config["loggingConfig"], config["outputDir"],
+                                          config["version"], config["outputFormat"], ids, params)
         except yaml.YAMLError as ex:
             print("Error reading config file {}".format(ex))
         except KeyError as ex:

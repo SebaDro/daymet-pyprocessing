@@ -1,4 +1,5 @@
 dataDir: "./data"
+loggingConfig: "./config/logging.yml"
 outputDir: "./output"
 ids: # Do not set this parameter when all files within dataDir should be processed
   - "1"

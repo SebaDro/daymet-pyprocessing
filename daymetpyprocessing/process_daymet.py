@@ -5,17 +5,20 @@ import yaml
 from daymetpyprocessing import processing
 
 
+def setup_logging(logging_config_path: str):
+    with open(logging_config_path, "r") as stream:
+        log_config = yaml.load(stream, Loader=yaml.FullLoader)
+        logging.config.dictConfig(log_config)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Process some Daymet files.')
     parser.add_argument('operation', type=str, choices=['merge', 'clip', 'aggregate'], help="Process Daymet files.")
     parser.add_argument('config', type=str, help="Path to a config file that controls the operation process")
     args = parser.parse_args()
 
-    with open("../config/logging.yml", "r") as stream:
-        log_config = yaml.load(stream, Loader=yaml.FullLoader)
-        logging.config.dictConfig(log_config)
-
     config = processing.read_daymet_preprocessing_config(args.config)
+    setup_logging(config.logging_config)
     if args.operation == "merge":
         if config.ids is None:
             logging.info(f"Start merging Daymet files for all features stored in {config.data_dir}.")

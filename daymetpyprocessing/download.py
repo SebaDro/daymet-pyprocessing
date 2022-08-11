@@ -21,7 +21,7 @@ class DaymetDownloadConfig:
     """
 
     def __init__(self, name: str, variable: str, start_time: datetime.datetime, end_time: datetime.datetime,
-                 output_dir: str, single_file_storage: bool, version: str, read_timeout: int):
+                 output_dir: str, single_file_storage: bool, version: str, read_timeout: int, logging_config: str):
         """
 
         Parameters
@@ -43,6 +43,8 @@ class DaymetDownloadConfig:
             Version of the Daymet data to download (Supported: v3, v4)
         read_timeout: int
             Request read time out in seconds
+        logging_config: str
+            Path to a logging configuration file
         """
         self.__name = name
         self.__variable = variable
@@ -52,6 +54,7 @@ class DaymetDownloadConfig:
         self.__single_file_storage = single_file_storage
         self.__version = version
         self.__read_timeout = read_timeout
+        self.__logging_config = logging_config
 
     @property
     def name(self):
@@ -85,6 +88,10 @@ class DaymetDownloadConfig:
     def read_timeout(self):
         return self.__read_timeout
 
+    @property
+    def logging_config(self):
+        return self.__logging_config
+
 
 class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
     """
@@ -93,7 +100,7 @@ class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
 
     def __init__(self, geo_file: str, id_col: str, ids: list, name: str, variable: str, start_time: datetime.datetime,
                  end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str,
-                 read_timeout: int):
+                 read_timeout: int, logging_config: str):
         """
 
         Parameters
@@ -121,8 +128,11 @@ class DaymetDownloadGeofileConfig(DaymetDownloadConfig):
             Version of the Daymet data to download (Supported: v3, v4)
         read_timeout: int
             Request read time out in seconds
+        logging_config: str
+            Path to a logging configuration file
         """
-        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
+        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout,
+                         logging_config)
         self.__geo_file = geo_file
         self.__id_col = id_col
         self.__ids = ids
@@ -151,7 +161,7 @@ class DaymetDownloadBboxConfig(DaymetDownloadConfig):
 
     def __init__(self, bbox: list, name: str, variable: str, start_time: datetime.datetime,
                  end_time: datetime.datetime, output_dir: str, single_file_storage: bool, version: str,
-                 read_timeout: int):
+                 read_timeout: int, logging_config: str):
         """
 
         Parameters
@@ -175,8 +185,11 @@ class DaymetDownloadBboxConfig(DaymetDownloadConfig):
             Version of the Daymet data to download (Supported: v3, v4)
         read_timeout: int
             Request read time out in seconds
+        logging_config: str
+            Path to a logging configuration file
         """
-        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout)
+        super().__init__(name, variable, start_time, end_time, output_dir, single_file_storage, version, read_timeout,
+                         logging_config)
         self.__bbox = bbox
 
     @property
@@ -343,7 +356,7 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
                 return DaymetDownloadBboxConfig(config["bbox"], config["name"], config["variable"], start_time,
                                                 end_time,
                                                 config["outputDir"], config["singleFileStorage"], config["version"],
-                                                config["readTimeout"])
+                                                config["readTimeout"], config["loggingConfig"])
             elif "geo" in config:
                 ids = None
                 if "ids" in config["geo"]:
@@ -351,7 +364,7 @@ def read_daymet_download_config(path: str) -> DaymetDownloadConfig:
                 return DaymetDownloadGeofileConfig(config["geo"]["file"], config["geo"]["idCol"], ids, config["name"],
                                                    config["variable"], start_time, end_time, config["outputDir"],
                                                    config["singleFileStorage"], config["version"],
-                                                   config["readTimeout"])
+                                                   config["readTimeout"], config["loggingConfig"])
             else:
                 raise ValueError("Config must contain at least one of the following definitions: 'geo', 'bbox'}")
         except yaml.YAMLError:

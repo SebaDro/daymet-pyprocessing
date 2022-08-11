@@ -1,4 +1,5 @@
 name: "test"
+loggingConfig: "./config/logging.yml"
 geo:
   file: "./data/features.geojson"
   idCol: "id"

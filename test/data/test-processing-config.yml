@@ -1,4 +1,5 @@
 dataDir: "./data"
+loggingConfig: "./config/logging.yml"
 ids:
   - "0"
   - "1"

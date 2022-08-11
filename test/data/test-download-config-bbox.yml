@@ -1,4 +1,5 @@
 name: "test"
+loggingConfig: "./config/logging.yml"
 bbox: [-73.73, 40.93, -73.72, 40.94]
 readTimeout: 120
 singleFileStorage: true

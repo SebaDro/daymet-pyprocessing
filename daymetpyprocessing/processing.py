@@ -239,7 +239,7 @@ def aggregate(config: DaymetProcessingConfig):
             elif aggregation_mode == "min":
                 xds_aggr = xds.min(dim=["y", "x"])
             elif aggregation_mode == "mean":
-                xds_aggr = xds.min(dim=["y", "x"])
+                xds_aggr = xds.mean(dim=["y", "x"])
             else:
                 raise ValueError(f"Unsupported aggregation mode '{aggregation_mode}'. Supported modes: 'min', 'max', "
                                  f"'mean'.")

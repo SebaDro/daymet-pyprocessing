@@ -9,10 +9,18 @@ North America, Hawaii, and Puerto Rico. Daymet Version 3 and Version 4 data are 
 via ORNL DAAC's Thematic Real-time Environmental Distributed Data Services (THREDDS).
 
 ## Get started
-To install the Daymet PyProcessing package just use Pip.
+To install the Daymet PyProcessing package just use Pip. To install the latest version of the package, run:
+```commandline
+python3 -m pip install git+https://github.com/SebaDro/daymet-pyprocessing.git
+```
 
-For installing all required packages you also can either use Conda or Pip. Therefore, this repo comes with an
-_environment.yml_ and a _requirements.txt_ in this repository, respectively.
+It is also possible to clone this repository to your local machine and install the package from your local copy:
+```commandline
+python3 -m pip install -e .
+```
+
+For developing purpose, you also can either use Conda or Pip to install all required dependencies. Therefore, this repo
+comes with an _environment.yml_ and a _requirements.txt_ in this repository, respectively.
 
 Note, that this project depends on GeoPandas, which may not install all required dependencies for some operations
 systems. In this case, you'll find installing instructions within the
@@ -27,7 +35,7 @@ supports two modes: download for multiple areas based on a geo file and download
 Prepare a config file as stated above and run the `download_daymet` script with the path to the config file as
 only positional argument:
 ```
-python download_daymet ./config/download-config.yml
+download_daymet ./config/download-config.yml
 ```
 
 The script will download Daymet datasets via NetCDF Subset Service (NCSS) for each geospatial object present in the
@@ -40,6 +48,7 @@ Daymet data for each of the geometries based on its bounding box. Daymet files w
 
 | Config parameter    | Description                                                                                                                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| _loggingConfig_     | Path to a logging configuration file. This must be a YAML file according to the [Python logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).                                                                |
 | _geo.file_          | Path to a file that contains geospatial data. The file must be in a data format that can be read by GeoPandas and should contain polygon geometries with WGS84 coordinates, which will be used for requesting Daymet data.                                          |
 | _geo.idCol_         | Name of the column that contains unique identifiers for the geospatial objects.                                                                                                                                                                                     |
 | _geo.ids_           | IDs of the geospatial objects used for requesting Daymet data. If `None`, all geospatial objects from the _geo.file_ will be considered.                                                                                                                            |
@@ -55,6 +64,7 @@ This mode takes a bbox parameter that will be directly used for download Daymet 
 
 | Config parameter    | Description                                                                                                                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| _loggingConfig_     | Path to a logging configuration file. This must be a YAML file according to the [Python logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).                                                                |
 | _bbox_              | A static bbox used for downloading Daymet files. Format: [minLon, minLat, maxLon, maxLat] (e.g. [-73.73, 40.93, -73.72, 40.94])                                                                                                                                     |
 | _readTimeout_       | Sets a read timeout for the download.                                                                                                                                                                                                                               |
 | _singleFileStorage_ | For `true` the downloaded yearly Daymet datasets will be concatenated by time dimension and stored within a single file for each geospatial object. For `false` the downloaded yearly Daymet datasets will be stored within separate files foreach object and year. |
@@ -72,7 +82,7 @@ file. You'll find different exemplary files inside _./config_ which you can use 
 Prepare a config file as stated above and run the `process_daymet` script with the path to the config file as
 positional argument followed by a certain operation that should be applied to the Daymet files:
 ```
-python process_daymet {operation} ./config/processing-config.yml
+process_daymet {operation} ./config/processing-config.yml
 ```
 
 #### Combining Daymet data
@@ -88,6 +98,7 @@ These patterns follow the naming style for single downloaded files as a result o
 | Config parameter                | Description                                                                                                                                                                                                                    |
 |---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | _dataDir_                       | Path of the data directory which contains the Daymet NetCDF files. Only files which are stored according to a certain folder structure (you'll find an example below) within this directory will be considered for processing. |
+| _loggingConfig_                 | Path to a logging configuration file. This must be a YAML file according to the [Python logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).                           |
 | _outputDir_                     | Path to the output directory directory. Processing results will be stored here.                                                                                                                                                |
 | _ids_                           | Identifier used to determine, which Daymet files should be considered for processing. Leave empty, if all Daymet files inside the `dataDir` should be considered.                                                              |
 | _outputFormat_                  | Format for storing the results. Supporter: netcdf, zarr                                                                                                                                                                        |
@@ -105,6 +116,7 @@ These patterns follow the naming style for stored results of the _combine_ opera
 | Config parameter               | Description                                                                                                                                                                                                                    |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | _dataDir_                      | Path of the data directory which contains the Daymet NetCDF files. Only files which are stored according to a certain folder structure (you'll find an example below) within this directory will be considered for processing. |
+| _loggingConfig_                | Path to a logging configuration file. This must be a YAML file according to the [Python logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).                           |
 | _outputDir_                    | Path to the output directory directory. Processing results will be stored here.                                                                                                                                                |
 | _ids_                          | Identifier used to determine, which Daymet files should be considered for processing. Leave empty, if all Daymet files inside the `dataDir` should be considered.                                                              |
 | _outputFormat_                 | Format for storing the results. Supporter: netcdf, zarr                                                                                                                                                                        |
@@ -123,6 +135,7 @@ These patterns follow the naming style for stored results of the _combine_ opera
 | Config parameter                      | Description                                                                                                                                                                                                                    |
 |---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | _dataDir_                             | Path of the data directory which contains the Daymet NetCDF files. Only files which are stored according to a certain folder structure (you'll find an example below) within this directory will be considered for processing. |
+| _loggingConfig_                       | Path to a logging configuration file. This must be a YAML file according to the [Python logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).                           |
 | _outputDir_                           | Path to the output directory directory. Processing results will be stored here.                                                                                                                                                |
 | _ids_                                 | Identifier used to determine, which Daymet files should be considered for processing. Leave empty, if all Daymet files inside the `dataDir` should be considered.                                                              |
 | _outputFormat_                        | Format for storing the results. Supporter: netcdf, zarr                                                                                                                                                                        |
